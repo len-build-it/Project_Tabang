@@ -71,6 +71,7 @@ Plan section 1.1 replaces the workspace stop rules for this run:
 | Concurrent integration tests collided on dropping public schema | 1, resolved | Added `--test-concurrency=1` to `test:integration` and added before/after hooks for migrations and pool closure. | Resolved |
 | Docker backend process was stopped | 1, resolved | Launched `com.docker.backend.exe` as background daemon. Docker daemon and compose containers operational. | Resolved |
 | Local .env lacked DATABASE_URL during initial server smoke check | 1, resolved | Copied updated .env.example with local PostgreSQL credentials into local untracked .env file. | Resolved |
+| First Render deploy timed out with no open ports on 0.0.0.0 | 1, fix pushed | Render injects `PORT` but not `HOST`, so the server bound `127.0.0.1:10000`; `render.yaml` now sets `HOST=0.0.0.0`, verified locally to bind `0.0.0.0`. | Pending Len's redeploy |
 
 ## Decisions made by the agent
 
@@ -172,6 +173,8 @@ Do not reset a count on a new session or silently reinterpret a failed check as 
 - `npm audit` reports 5 dev-only findings in the test tooling.
 
 ## Next action
+
+Updated 2026-10-21T17:06+08:00: Len redeploys `tabang-app` on Render (Blueprint sync, then a deploy) with the `HOST=0.0.0.0` fix, then checks `/api/v1/health`, seeds hotlines, and grants the first admin per `docs/operations.md`.
 
 The executing agent starts FEAT-002 plan Phase 1 in this worktree on `feat-002/render`, using the prompt in plan section 4, and continues through Phase 6.
 At the end of every phase it updates the progress, problems, and decisions tables above.

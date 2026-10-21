@@ -17,7 +17,7 @@ Passwords, session tokens, reset tokens, and `DATABASE_URL` must never appear in
 | `APP_ORIGIN` | Host | Canonical application origin for CSRF checks and reset links (e.g. `http://127.0.0.1:8000` or `https://tabang-app.onrender.com`). |
 | `EMAIL_API_KEY` | Host | API key for the HTTP email delivery service (e.g. Resend). When unset in non-production, reset links print to the server console. |
 | `EMAIL_FROM` | Host | Sender email address for outgoing messages (e.g. `Tabang <noreply@yourdomain.com>`). |
-| `HOST`, `PORT` | Host | Address and port where `npm start` listens (default `127.0.0.1:8000`). Injected by Render in production. |
+| `HOST`, `PORT` | Host | Address and port where `npm start` listens (default `127.0.0.1:8000`). Render injects `PORT` only; `render.yaml` sets `HOST=0.0.0.0` because Render cannot reach a server bound to `127.0.0.1`. |
 | `API_RATE_LIMIT_PER_MINUTE` | Host | Allowed requests per minute per partner API key, and per address on public routes (default 60). |
 
 ## Local development
