@@ -3,11 +3,11 @@ import { Outlet, useLocation } from "react-router-dom";
 import AppHeader from "../components/navigation/AppHeader.jsx";
 import LoadingState from "../components/feedback/LoadingState.jsx";
 import SkipLink from "../components/navigation/SkipLink.jsx";
-import usePageTitle from "../components/navigation/usePageTitle.js";
+import { usePageChrome } from "../components/navigation/usePageTitle.js";
 import { PageHeading } from "../components/ui/Primitives.jsx";
 
 export default function PublicLayout() {
-  const pageTitle = usePageTitle();
+  const { heading } = usePageChrome();
   const location = useLocation();
 
   return (
@@ -15,7 +15,7 @@ export default function PublicLayout() {
       <SkipLink />
       <AppHeader />
       <main className="shell__content" id="main">
-        <PageHeading key={location.pathname}>{pageTitle}</PageHeading>
+        <PageHeading key={location.pathname}>{heading}</PageHeading>
         <Suspense
           fallback={
             <LoadingState

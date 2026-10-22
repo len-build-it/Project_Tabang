@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import Icon from "../ui/Icon.jsx";
 
 export function FormField({
   id,
@@ -23,13 +24,19 @@ export function FormField({
     undefined;
 
   return (
-    <div className="form-field">
+    <div className={error ? "form-field has-error" : "form-field"}>
       <label className="form-field__label" htmlFor={fieldId}>
         {label}
       </label>
       {hint ? (
         <p className="form-field__hint" id={hintId}>
           {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="form-field__error" id={errorId}>
+          <Icon name="alert" />
+          {error}
         </p>
       ) : null}
       <input
@@ -45,11 +52,6 @@ export function FormField({
         type={type}
         value={value}
       />
-      {error ? (
-        <p className="form-field__error" id={errorId}>
-          {error}
-        </p>
-      ) : null}
     </div>
   );
 }
@@ -72,13 +74,19 @@ export function PasswordField({
     undefined;
 
   return (
-    <div className="form-field">
+    <div className={error ? "form-field has-error" : "form-field"}>
       <label className="form-field__label" htmlFor={fieldId}>
         {label}
       </label>
       {hint ? (
         <p className="form-field__hint" id={hintId}>
           {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="form-field__error" id={errorId}>
+          <Icon name="alert" />
+          {error}
         </p>
       ) : null}
       <div className="form-field__control">
@@ -103,11 +111,6 @@ export function PasswordField({
           {revealed ? "Hide" : "Show"}
         </button>
       </div>
-      {error ? (
-        <p className="form-field__error" id={errorId}>
-          {error}
-        </p>
-      ) : null}
     </div>
   );
 }

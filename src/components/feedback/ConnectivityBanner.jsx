@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import Icon from "../ui/Icon.jsx";
 
 /**
- * Tells the resident the device is offline before they type a report.
+ * Tells the resident the device is offline, on every resident screen.
  *
  * `navigator.onLine` only proves the device has a network interface, not that
  * anything is reachable, so the wording avoids promising that being online
@@ -28,10 +29,12 @@ export default function ConnectivityBanner() {
   }
 
   return (
-    <p className="stale-notice" role="status">
-      This phone is offline. You can still write a report and it will be saved
-      here, but it will not reach responders until the connection returns. For
-      anything urgent, call for help directly.
+    <p className="offline-banner" role="status">
+      <Icon name="wifiOff" />
+      <span>
+        You&apos;re offline. New reports will be saved on this phone and sent
+        when the connection returns. For anything urgent, call 911.
+      </span>
     </p>
   );
 }

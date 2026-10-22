@@ -1,28 +1,10 @@
 import { Badge } from "../ui/Primitives.jsx";
-
-const VERIFICATION_TONE = {
-  verified: "success",
-  rejected: "danger",
-  pending: "neutral",
-};
-
-const INCIDENT_TONE = {
-  new: "warning",
-  acknowledged: "info",
-  dispatched: "info",
-  on_scene: "info",
-  resolved: "success",
-  cancelled: "neutral",
-};
-
-const INCIDENT_LABEL = {
-  new: "Awaiting response",
-  acknowledged: "Acknowledged",
-  dispatched: "Responders dispatched",
-  on_scene: "Responders on scene",
-  resolved: "Resolved",
-  cancelled: "Cancelled",
-};
+import {
+  INCIDENT_BADGE,
+  VERIFICATION_BADGE,
+  describeReportDetail,
+  kindBadge,
+} from "./reportBadges.js";
 
 function formatWhen(millis) {
   return millis ? new Date(millis).toLocaleString() : "Time not recorded";
@@ -40,54 +22,72 @@ export default function ReportCard({ report, variant = "personal", onCancel }) {
   const isPersonal = variant === "personal";
   // Staleness is computed at fetch time so this component stays pure.
   const isStale = Boolean(report.isStale);
+  const kind = kindBadge(report.kind);
+  const incident = INCIDENT_BADGE[report.incidentStatus];
+  const verification = VERIFICATION_BADGE[report.verificationStatus];
+  const detail = isPersonal ? describeReportDetail(report) : "";
 
   return (
     <li className="report-card">
-      <div className="report-card__meta">
-        <Badge tone={report.kind === "flood" ? "warning" : "info"}>
-          {report.kind === "flood" ? "Flood" : "Help"}
+      <div className="report-card__top">
+        <Badge icon={kind.icon} srPrefix="Kind: " tone={kind.tone}>
+          {kind.label}
         </Badge>
-
-        {isPersonal ? (
-          <>
-            <Badge tone={INCIDENT_TONE[report.incidentStatus] ?? "neutral"}>
-              {INCIDENT_LABEL[report.incidentStatus] ?? report.incidentStatus}
-            </Badge>
-            <Badge
-              tone={VERIFICATION_TONE[report.verificationStatus] ?? "neutral"}
-            >
-              {report.verificationStatus === "pending"
-                ? "Not yet verified"
-                : report.verificationStatus}
-            </Badge>
-          </>
-        ) : (
-          <Badge tone="success">Verified</Badge>
-        )}
-
-        {isStale ? <Badge tone="warning">No update in 24h</Badge> : null}
+        <p className="report-card__time">
+          {formatWhen(report.createdAtMillis)}
+        </p>
       </div>
 
-      <h3 className="report-card__title">
-        {isPersonal ? report.publicLocationLabel : report.barangay}
-      </h3>
+      <div>
+        <h3 className="report-card__title">
+          {isPersonal ? report.publicLocationLabel : report.barangay}
+        </h3>
+        {detail ? <p className="report-card__detail">{detail}</p> : null}
+      </div>
 
       <p className="report-card__body">
         {isPersonal ? report.description : report.summary}
       </p>
 
-      <p className="report-card__time">{formatWhen(report.createdAtMillis)}</p>
+      <div className="report-card__meta">
+        {isPersonal ? (
+          <>
+            <Badge
+              icon={incident?.icon ?? "info"}
+              srPrefix="Status: "
+              tone={incident?.tone ?? "neutral"}
+            >
+              {incident?.label ?? report.incidentStatus}
+            </Badge>
+            <Badge
+              icon={verification?.icon ?? "help"}
+              srPrefix="Verification: "
+              tone={verification?.tone ?? "neutral"}
+            >
+              {verification?.label ?? report.verificationStatus}
+            </Badge>
+          </>
+        ) : (
+          <Badge icon="shield" srPrefix="Verification: " tone="success">
+            Verified
+          </Badge>
+        )}
+
+        {isStale ? (
+          <Badge icon="clock" tone="warning">
+            No update in 24h
+          </Badge>
+        ) : null}
+      </div>
 
       {isPersonal && onCancel && report.canCancel ? (
-        <div className="button-row">
-          <button
-            className="action-button action-button--secondary"
-            onClick={() => onCancel(report)}
-            type="button"
-          >
-            Cancel this report
-          </button>
-        </div>
+        <button
+          className="action-button action-button--secondary action-button--compact"
+          onClick={() => onCancel(report)}
+          type="button"
+        >
+          Cancel report
+        </button>
       ) : null}
     </li>
   );

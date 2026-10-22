@@ -5,24 +5,25 @@ import LoadingState from "../components/feedback/LoadingState.jsx";
 import SkipLink from "../components/navigation/SkipLink.jsx";
 import BottomNav from "../components/navigation/BottomNav.jsx";
 import { useAuth } from "../app/providers/useAuth.js";
-import usePageTitle from "../components/navigation/usePageTitle.js";
+import { usePageChrome } from "../components/navigation/usePageTitle.js";
 import { PageHeading } from "../components/ui/Primitives.jsx";
 
 const baseItems = [
-  { to: "/responder", label: "Dashboard" },
-  { to: "/responder/incidents", label: "Incidents" },
-  { to: "/responder/advisories", label: "Advisories" },
-  { to: "/responder/hotlines", label: "Hotlines" },
-  { to: "/responder/account", label: "Account" },
+  { to: "/responder", label: "Dashboard", icon: "grid" },
+  { to: "/responder/incidents", label: "Incidents", icon: "list" },
+  { to: "/responder/advisories", label: "Advisories", icon: "megaphone" },
+  { to: "/responder/hotlines", label: "Hotlines", icon: "phone" },
+  { to: "/responder/account", label: "Account", icon: "user" },
 ];
 
 const reviewerItem = {
   to: "/responder/applications",
   label: "Applications",
+  icon: "idcard",
 };
 
 export default function ResponderLayout() {
-  const pageTitle = usePageTitle();
+  const { heading } = usePageChrome();
   const location = useLocation();
   const { isReviewer } = useAuth();
 
@@ -39,9 +40,9 @@ export default function ResponderLayout() {
   return (
     <div className="shell shell--responder">
       <SkipLink />
-      <AppHeader />
+      <AppHeader workspaceLabel="Responder" />
       <main className="shell__content shell__content--with-nav" id="main">
-        <PageHeading key={location.pathname}>{pageTitle}</PageHeading>
+        <PageHeading key={location.pathname}>{heading}</PageHeading>
         {/* Responders are residents too: they may need to report their own
             flooding or ask for help. */}
         <nav aria-label="Other workspaces" className="workspace-switch">

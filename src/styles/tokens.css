@@ -82,10 +82,49 @@
   --color-warning-text: #fac37b;
   --color-danger-text: #ffbbbb;
 
+  /*
+   * Tactile layer from the v2 design: cards catch light on the top edge and
+   * cast a short shadow, buttons sit on a darker ledge, and fields are
+   * recessed wells. The depth tells people what can be pressed and what can
+   * be typed into without relying on colour.
+   */
+  /*
+   * The design drew cards at 11% white fading to 4%. Coloured text (orange,
+   * blue, pink) on 11% white over the lightest point of the shell measures
+   * about 4.3:1, so the top is held to 8%; checked in check-contrast.mjs.
+   */
+  --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  --gradient-card-raised: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+  --color-card-border: rgba(255, 255, 255, 0.13);
+  --shadow-card:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 0 rgba(0, 0, 0, 0.3),
+    0 8px 18px -10px rgba(2, 8, 30, 0.7);
+  --gradient-button-primary: linear-gradient(180deg, #ffa53a 0%, #f5900a 58%, #e88400 100%);
+  --shadow-button-primary:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(140, 70, 0, 0.35),
+    0 2px 0 #7a4200, 0 7px 14px -6px rgba(0, 0, 0, 0.6);
+  --gradient-button-secondary: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.04));
+  --shadow-button-secondary:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 0 rgba(0, 0, 0, 0.35),
+    0 5px 12px -5px rgba(0, 0, 0, 0.55);
+  --gradient-button-danger: linear-gradient(180deg, #ff8a8a, #f25c5c);
+  --shadow-button-danger:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 0 #7a1f1f,
+    0 7px 14px -6px rgba(0, 0, 0, 0.6);
+  --gradient-well: linear-gradient(180deg, rgba(3, 10, 38, 0.8), rgba(7, 24, 82, 0.55));
+  --shadow-well:
+    inset 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+  --color-field-border: rgba(255, 255, 255, 0.55);
+  --gradient-nav: linear-gradient(180deg, #0d2668, #061446);
+  --color-dialog: #0e2a6e;
+  --gradient-dialog: linear-gradient(180deg, #16398a, #0e2a6e);
+
   --color-shadow: rgba(0, 0, 0, 0.6);
-  --radius-card: 24px;
-  --radius-pill: 50px;
-  --radius-input: 14px;
+  --radius-card: 14px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+  --radius-input: 10px;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

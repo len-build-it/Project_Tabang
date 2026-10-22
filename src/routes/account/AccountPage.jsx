@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth.js";
 import { FormField, FormStatus } from "../../components/forms/FormField.jsx";
+import Icon from "../../components/ui/Icon.jsx";
 import { validateProfileInput } from "../../services/auth/profile.js";
 import { describeActionError } from "../../services/errors/describeActionError.js";
+
+const ROLE_LABELS = {
+  resident: "Resident",
+  responder: "Responder",
+  reviewer: "Reviewer",
+  admin: "Administrator",
+};
 
 function ProfileForm({ user, profile, updateOwnProfile }) {
   const [form, setForm] = useState(() => ({
@@ -45,7 +53,7 @@ function ProfileForm({ user, profile, updateOwnProfile }) {
 
   return (
     <form className="auth-form" noValidate onSubmit={handleSubmit}>
-      <h2>Your details</h2>
+      <h2 className="visually-hidden">Your details</h2>
       <FormStatus message={status?.message} tone={status?.tone} />
 
       <FormField
@@ -60,7 +68,7 @@ function ProfileForm({ user, profile, updateOwnProfile }) {
         autoComplete="tel"
         error={errors.phone}
         inputMode="tel"
-        label="Mobile number"
+        label="Phone number"
         name="phone"
         onChange={setField("phone")}
         type="tel"
@@ -74,17 +82,20 @@ function ProfileForm({ user, profile, updateOwnProfile }) {
         value={form.barangay}
       />
 
-      <div className="button-row">
-        <button className="action-button" disabled={saving} type="submit">
-          {saving ? "Saving…" : "Save details"}
-        </button>
-      </div>
+      <button
+        className="action-button action-button--block"
+        disabled={saving}
+        type="submit"
+      >
+        {saving ? "Saving…" : "Save changes"}
+      </button>
     </form>
   );
 }
 
 export default function AccountPage() {
-  const { user, profile, role, signOut, updateOwnProfile } = useAuth();
+  const { user, profile, role, isResponder, signOut, updateOwnProfile } =
+    useAuth();
   const navigate = useNavigate();
   const [signOutError, setSignOutError] = useState(null);
   const [signingOut, setSigningOut] = useState(false);
@@ -104,15 +115,15 @@ export default function AccountPage() {
   }
 
   return (
-    <section className="surface-card surface-card--wide">
-      <div className="detail-list">
-        <span>
-          <strong>Email</strong>
-          {user?.email || "Not provided"}
-        </span>
-        <span>
-          <strong>Role</strong>
-          {role}
+    <div className="page-stack">
+      <div className="account-identity">
+        <p>
+          <span className="visually-hidden">Email: </span>
+          {user?.email || "Email not provided"}
+        </p>
+        <span className="role-pill">
+          <Icon name="user" />
+          Role: {ROLE_LABELS[role] ?? role}
         </span>
       </div>
 
@@ -124,18 +135,28 @@ export default function AccountPage() {
         />
       ) : null}
 
+      {isResponder ? null : (
+        <Link className="link-card" to="/app/responder-application">
+          <Icon className="link-card__icon" name="shield" />
+          <span className="link-card__text">
+            <strong>Apply to be a responder</strong>
+            <span>For LGU, MDRRMO, barangay and volunteer teams</span>
+          </span>
+          <Icon name="chevR" />
+        </Link>
+      )}
+
       <FormStatus message={signOutError} />
 
-      <div className="button-row">
-        <button
-          className="action-button"
-          disabled={signingOut}
-          onClick={handleSignOut}
-          type="button"
-        >
-          {signingOut ? "Signing out…" : "Sign out"}
-        </button>
-      </div>
-    </section>
+      <button
+        className="action-button action-button--secondary action-button--block"
+        disabled={signingOut}
+        onClick={handleSignOut}
+        type="button"
+      >
+        <Icon name="logout" />
+        {signingOut ? "Signing out…" : "Sign out"}
+      </button>
+    </div>
   );
 }

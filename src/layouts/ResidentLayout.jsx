@@ -1,22 +1,23 @@
 import { Suspense, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AppHeader from "../components/navigation/AppHeader.jsx";
+import ConnectivityBanner from "../components/feedback/ConnectivityBanner.jsx";
 import LoadingState from "../components/feedback/LoadingState.jsx";
 import SkipLink from "../components/navigation/SkipLink.jsx";
 import BottomNav from "../components/navigation/BottomNav.jsx";
 import NavDrawer from "../components/navigation/NavDrawer.jsx";
 import { useAuth } from "../app/providers/useAuth.js";
-import usePageTitle from "../components/navigation/usePageTitle.js";
+import { usePageChrome } from "../components/navigation/usePageTitle.js";
 import { PageHeading } from "../components/ui/Primitives.jsx";
 import { createSubmissionQueue } from "../services/offline/submissionQueue.js";
 import { replayQueuedReports } from "../services/reports/replayQueuedReports.js";
 
 const bottomNavItems = [
-  { to: "/app", label: "Home" },
-  { to: "/app/reports/new", label: "Report" },
-  { to: "/app/help/new", label: "Request" },
-  { to: "/app/hotlines", label: "Hotlines" },
-  { to: "/app/reports", label: "Reports" },
+  { to: "/app", label: "Home", icon: "home" },
+  { to: "/app/reports/new", label: "Report", icon: "waves" },
+  { to: "/app/help/new", label: "Request", icon: "lifebuoy" },
+  { to: "/app/hotlines", label: "Hotlines", icon: "phone" },
+  { to: "/app/reports", label: "Reports", icon: "file" },
 ];
 
 const drawerItems = [
@@ -30,7 +31,7 @@ const drawerItems = [
 ];
 
 export default function ResidentLayout({ submissionQueue, reportRepository }) {
-  const pageTitle = usePageTitle();
+  const { heading, backTo } = usePageChrome();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { isResponder, signOut, user } = useAuth();
@@ -80,6 +81,7 @@ export default function ResidentLayout({ submissionQueue, reportRepository }) {
     <div className="shell shell--resident">
       <SkipLink />
       <AppHeader
+        backTo={backTo}
         menu={{
           label: "Open navigation menu",
           controls: "resident-drawer",
@@ -87,6 +89,8 @@ export default function ResidentLayout({ submissionQueue, reportRepository }) {
           onOpen: () => setDrawerOpen(true),
         }}
       />
+
+      <ConnectivityBanner />
 
       <NavDrawer
         footer={
@@ -114,7 +118,7 @@ export default function ResidentLayout({ submissionQueue, reportRepository }) {
       />
 
       <main className="shell__content shell__content--with-nav" id="main">
-        <PageHeading key={location.pathname}>{pageTitle}</PageHeading>
+        <PageHeading key={location.pathname}>{heading}</PageHeading>
         <Suspense
           fallback={
             <LoadingState

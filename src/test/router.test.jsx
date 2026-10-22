@@ -55,6 +55,8 @@ function routeCases(routes, parentPath = "") {
       {
         path: path.replace(/:[^/]+/g, "sample"),
         title: route.handle?.title,
+        // A route may word its on-page heading differently from the tab title.
+        heading: route.handle?.heading ?? route.handle?.title,
         session: path.startsWith("/app")
           ? residentSession()
           : path.startsWith("/responder")
@@ -98,11 +100,12 @@ describe("application shell routing", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: "Resident home",
+        name: "What do you need?",
       }),
     ).toBeInTheDocument();
+    expect(document.title).toBe("Resident home | Tabang");
     expect(
-      await screen.findByText("What do you need right now?"),
+      await screen.findByRole("list", { name: "Quick actions" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("navigation", { name: "Primary route navigation" }),
@@ -129,7 +132,10 @@ describe("application shell routing", () => {
     const { router } = renderRoute("/app/community", residentSession());
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Resident home" }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "What do you need?",
+      }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/app");
   });
@@ -160,13 +166,17 @@ describe("page titles and headings", () => {
   it("renders one focused main heading for every matched route", async () => {
     const routes = withEmptyPageElements(appRoutes);
 
-    for (const { path, title, session } of routeCases(appRoutes)) {
+    for (const { path, title, heading: name, session } of routeCases(
+      appRoutes,
+    )) {
       const { unmount } = renderRoute(path, session, routes);
 
       const heading = await screen.findByRole("heading", {
         level: 1,
-        name: title === "Page not found" ? "That page does not exist" : title,
+        name: title === "Page not found" ? "That page does not exist" : name,
       });
+
+      await waitFor(() => expect(document.title).toBe(`${title} | Tabang`));
 
       expect(screen.getByRole("main").querySelectorAll("h1")).toHaveLength(1);
       await waitFor(() => expect(heading).toHaveFocus());

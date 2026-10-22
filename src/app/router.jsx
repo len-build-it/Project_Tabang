@@ -135,7 +135,7 @@ export const appRoutes = [
       {
         index: true,
         element: <ResidentHomePage />,
-        handle: { title: "Resident home" },
+        handle: { title: "Resident home", heading: "What do you need?" },
       },
       {
         // Advisories now have one home: the resident home page.
@@ -151,12 +151,12 @@ export const appRoutes = [
       {
         path: "reports/new",
         element: <ReportFormPage kind="flood" />,
-        handle: { title: "Report a flood" },
+        handle: { title: "Report a flood", backTo: "/app" },
       },
       {
         path: "help/new",
         element: <ReportFormPage kind="help" />,
-        handle: { title: "Ask for assistance" },
+        handle: { title: "Ask for assistance", backTo: "/app" },
       },
       {
         path: "hotlines",
@@ -166,12 +166,20 @@ export const appRoutes = [
       {
         path: "account",
         element: <AccountPage />,
-        handle: { title: "Resident account" },
+        handle: {
+          title: "Resident account",
+          heading: "Account",
+          backTo: "/app",
+        },
       },
       {
         path: "responder-application",
         element: <ResponderApplicationPage />,
-        handle: { title: "Responder application" },
+        handle: {
+          title: "Responder application",
+          heading: "Apply to be a responder",
+          backTo: "/app/account",
+        },
       },
     ],
   },

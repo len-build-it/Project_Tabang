@@ -174,6 +174,9 @@ Do not reset a count on a new session or silently reinterpret a failed check as 
 
 ## Next action
 
+Updated 2026-10-22T08:45+08:00: FEAT-003 (resident screens in the v2 design) is implemented and committed on branch `feat-003/resident-ui`, based on `feat-002/render`; see [docs/features/FEAT-003-resident-ui-v2.md](docs/features/FEAT-003-resident-ui-v2.md) and [docs/evidence/FEAT-003.md](docs/evidence/FEAT-003.md).
+It is not pushed or merged; Len reviews the spec record and screenshots, then decides on pushing and on the public and responder v2 screens.
+
 Updated 2026-10-21T17:06+08:00: Len redeploys `tabang-app` on Render (Blueprint sync, then a deploy) with the `HOST=0.0.0.0` fix, then checks `/api/v1/health`, seeds hotlines, and grants the first admin per `docs/operations.md`.
 
 The executing agent starts FEAT-002 plan Phase 1 in this worktree on `feat-002/render`, using the prompt in plan section 4, and continues through Phase 6.

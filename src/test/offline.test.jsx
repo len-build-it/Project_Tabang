@@ -128,7 +128,7 @@ describe("emergency fallback", () => {
 
     expect(screen.getByText("Your report has not been sent")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "(036) 262-4979" }),
+      screen.getByRole("link", { name: /^\(036\) 262-4979/ }),
     ).toBeInTheDocument();
     expect(screen.getByText(/not yet verified/)).toBeInTheDocument();
   });
@@ -136,7 +136,7 @@ describe("emergency fallback", () => {
   it("still points somewhere when no hotlines could be loaded", () => {
     render(<EmergencyFallback hotlines={[]} />);
 
-    expect(screen.getByRole("link", { name: "911" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Call 911" })).toHaveAttribute(
       "href",
       "tel:911",
     );

@@ -112,7 +112,7 @@ describe("responder application route", () => {
 
     expect(
       await screen.findByText(
-        "Submitting this does not grant responder access. A reviewer checks every application.",
+        "A reviewer checks your ID and selfie before you can use the responder workspace. Sending this does not grant responder access on its own.",
       ),
     ).toBeInTheDocument();
   });
@@ -130,7 +130,7 @@ describe("responder application route", () => {
     fireEvent.change(screen.getByLabelText("Organization"), {
       target: { value: "Aklan MDRRMO" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Submit application" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send application" }));
 
     // Missing evidence and consent, so nothing is sent.
     await waitFor(() => {
@@ -153,7 +153,7 @@ describe("responder application route", () => {
       uploadEvidence: vi.fn(),
     });
 
-    expect(await screen.findByText("Under review")).toBeInTheDocument();
+    expect(await screen.findByText("Pending review")).toBeInTheDocument();
     expect(
       screen.getByText(/Applying does not grant responder access\./),
     ).toBeInTheDocument();
@@ -171,6 +171,6 @@ describe("responder application route", () => {
       uploadEvidence: vi.fn(),
     });
 
-    expect(await screen.findByText("Not approved")).toBeInTheDocument();
+    expect(await screen.findByText("Rejected")).toBeInTheDocument();
   });
 });

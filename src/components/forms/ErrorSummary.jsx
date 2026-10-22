@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import Icon from "../ui/Icon.jsx";
 
 /**
  * Lists every problem at the top of a form after a failed submit.
@@ -25,13 +26,16 @@ export default function ErrorSummary({ errors, fields, attempt }) {
   return (
     <div
       aria-labelledby="error-summary-title"
-      className="feedback-card feedback-card--error"
+      className="error-summary"
       ref={ref}
       role="alert"
       tabIndex={-1}
     >
-      <h2 id="error-summary-title">Check these before sending</h2>
-      <ul className="link-list">
+      <h2 id="error-summary-title">
+        <Icon name="alert" />
+        There is a problem
+      </h2>
+      <ul>
         {items.map(([key, fieldId]) => (
           <li key={key}>
             <a href={`#${fieldId}`}>{errors[key]}</a>

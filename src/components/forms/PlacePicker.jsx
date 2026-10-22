@@ -1,4 +1,5 @@
 import { FormField } from "./FormField.jsx";
+import Icon from "../ui/Icon.jsx";
 import {
   AKLAN_MUNICIPALITIES,
   barangaysFor,
@@ -12,7 +13,7 @@ function SelectField({ id, label, hint, error, value, onChange, children }) {
     undefined;
 
   return (
-    <div className="form-field">
+    <div className={error ? "form-field has-error" : "form-field"}>
       <label className="form-field__label" htmlFor={id}>
         {label}
       </label>
@@ -21,21 +22,25 @@ function SelectField({ id, label, hint, error, value, onChange, children }) {
           {hint}
         </p>
       ) : null}
-      <select
-        aria-describedby={describedBy}
-        aria-invalid={error ? "true" : undefined}
-        className="form-field__input"
-        id={id}
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        {children}
-      </select>
       {error ? (
         <p className="form-field__error" id={errorId}>
+          <Icon name="alert" />
           {error}
         </p>
       ) : null}
+      <div className="select-control">
+        <select
+          aria-describedby={describedBy}
+          aria-invalid={error ? "true" : undefined}
+          className="form-field__input"
+          id={id}
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        >
+          {children}
+        </select>
+        <Icon className="select-control__chevron" name="chevD" />
+      </div>
     </div>
   );
 }

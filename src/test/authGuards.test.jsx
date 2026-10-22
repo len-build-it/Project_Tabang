@@ -41,7 +41,7 @@ describe("route guards", () => {
     // matters: a query for text that no longer exists anywhere would pass
     // whether or not the guard worked.
     expect(
-      screen.queryByRole("heading", { name: "What do you need right now?" }),
+      screen.queryByRole("heading", { name: "What do you need?" }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
@@ -114,7 +114,7 @@ describe("route guards", () => {
   it("drops a resident out of protected routes when the session ends", async () => {
     const { gateway, router } = renderRoute("/app", residentSession());
 
-    await screen.findByText("What do you need right now?");
+    await screen.findByRole("heading", { level: 1, name: "What do you need?" });
     gateway.emit(null);
 
     await waitFor(() => {
@@ -125,7 +125,7 @@ describe("route guards", () => {
   it("re-evaluates access when a role is granted mid-session", async () => {
     const { gateway, router } = renderRoute("/app", residentSession());
 
-    await screen.findByText("What do you need right now?");
+    await screen.findByRole("heading", { level: 1, name: "What do you need?" });
     gateway.emit(responderSession());
     router.navigate("/responder");
 

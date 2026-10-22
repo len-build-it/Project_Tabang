@@ -1,7 +1,7 @@
 # Specification index
 
 Created: 2026-09-26T16:25:15+08:00
-Updated: 2026-10-21T15:43:00+08:00
+Updated: 2026-10-22T08:45:00+08:00
 
 | Category | ID | Current path | Revision | Status | Replaces |
 | --- | --- | --- | --- | --- | --- |
@@ -11,6 +11,7 @@ Updated: 2026-10-21T15:43:00+08:00
 | Plan | FEAT-001 | [plans/FEAT-001-implementation.md](plans/FEAT-001-implementation.md) | 2 | Approved 2026-10-17; complete; Revision 1 is in Git at `d928c56` | [archive/AI_IMPLEMENTATION_PLAN.md](archive/AI_IMPLEMENTATION_PLAN.md), archived in phase A1 |
 | Feature | FEAT-002 | [features/FEAT-002-render-migration.md](features/FEAT-002-render-migration.md) | 1 | Approved 2026-10-21 | Replaces FEAT-001/REQ-005, REQ-010 (CSP part), REQ-040 to REQ-043 |
 | Plan | FEAT-002 | [plans/FEAT-002-implementation.md](plans/FEAT-002-implementation.md) | 1 | Approved 2026-10-21; execution handed to another AI coding agent | - |
+| Feature | FEAT-003 | [features/FEAT-003-resident-ui-v2.md](features/FEAT-003-resident-ui-v2.md) | 1 | Implemented on Len's chat instruction 2026-10-22; record awaits review | - |
 | Operations | OPS | [operations.md](operations.md) | - | Current; rewritten for Render in FEAT-002 phase 6 | [archive/supabase-operations.md](archive/supabase-operations.md), archived 2026-10-21 |
 | Reference | API | [api/README.md](api/README.md), [api/openapi.json](api/openapi.json) | v1 | Current | - |
 | Reference | URLS | [legacy-url-map.md](legacy-url-map.md) | - | Current; A2 merged in plan phase 1 | - |
@@ -19,8 +20,10 @@ Updated: 2026-10-21T15:43:00+08:00
 | Evidence | FEAT-001 A | [evidence/FEAT-001-track-a.md](evidence/FEAT-001-track-a.md) | - | Historical, A1 and A2 | - |
 | Evidence | FEAT-001 C | [evidence/FEAT-001-track-c.md](evidence/FEAT-001-track-c.md) | - | Historical, C1 | - |
 | Evidence | FEAT-002 | [evidence/FEAT-002.md](evidence/FEAT-002.md) | - | Current, from FEAT-002 phase 1 | - |
+| Evidence | FEAT-003 | [evidence/FEAT-003.md](evidence/FEAT-003.md) | - | Current | - |
 
 FEAT-001 Revision 2 was approved on 2026-10-17; all eight plan phases were completed on 2026-10-18, with the gaps listed in `HANDOFF.md`.
 FEAT-002 moves Tabang from Supabase to Render; it was approved on 2026-10-21 for execution by another AI coding agent without hard stops.
+FEAT-003 restyles the resident screens to the v2 design from Claude Design on branch `feat-003/resident-ui`; Len asked for it in chat on 2026-10-22.
 The track A and C status files are archived in `archive/`; `HANDOFF.md` is the only status record.
 Superseded documents move to `archive/` with a first line linking their replacement.

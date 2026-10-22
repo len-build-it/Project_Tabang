@@ -8,6 +8,7 @@ export default function Modal({
   onClose,
   onConfirm,
   dismissLabel = "Go back",
+  confirmTone = "primary",
   children,
 }) {
   const titleId = useId();
@@ -80,8 +81,21 @@ export default function Modal({
         <h2 id={titleId}>{title}</h2>
         <p id={descriptionId}>{description}</p>
         {children}
-        <div className="button-row">
-          {/* When a confirm action exists, dismissing must never perform it. */}
+        <div className="modal-shell__actions">
+          {/* The action is named on its button; the safe choice below it
+              takes the initial focus, so dismissing never performs it. */}
+          <button
+            className={
+              onConfirm && confirmTone === "danger"
+                ? "action-button action-button--danger"
+                : "action-button"
+            }
+            onClick={onConfirm ?? onClose}
+            ref={onConfirm ? undefined : closeButtonRef}
+            type="button"
+          >
+            {confirmLabel}
+          </button>
           {onConfirm ? (
             <button
               className="action-button action-button--secondary"
@@ -92,14 +106,6 @@ export default function Modal({
               {dismissLabel}
             </button>
           ) : null}
-          <button
-            className="action-button"
-            onClick={onConfirm ?? onClose}
-            ref={onConfirm ? undefined : closeButtonRef}
-            type="button"
-          >
-            {confirmLabel}
-          </button>
         </div>
       </div>
     </div>

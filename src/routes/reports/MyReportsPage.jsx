@@ -6,11 +6,8 @@ import Modal from "../../components/feedback/Modal.jsx";
 import { FormStatus } from "../../components/forms/FormField.jsx";
 import PendingReports from "../../components/reports/PendingReports.jsx";
 import ReportCard from "../../components/reports/ReportCard.jsx";
-import {
-  ActionLink,
-  Section,
-  Skeleton,
-} from "../../components/ui/Primitives.jsx";
+import { kindBadge } from "../../components/reports/reportBadges.js";
+import { ActionLink, Skeleton } from "../../components/ui/Primitives.jsx";
 import { describeActionError } from "../../services/errors/describeActionError.js";
 import { createSubmissionQueue } from "../../services/offline/submissionQueue.js";
 import { createReportRepository } from "../../services/reports/reportRepository.js";
@@ -133,12 +130,15 @@ export default function MyReportsPage({ reportRepository, submissionQueue }) {
   return (
     <>
       <PendingReports queue={queue} repository={repository} />
-      <Section
-        id="my-reports"
-        title="Submitted reports"
-        description="Only your own reports appear here. Responders handling them can also see them."
-        action={<ActionLink to="/app/reports/new">New report</ActionLink>}
-      >
+      <section aria-labelledby="my-reports-heading" className="report-group">
+        <h2 className="report-group__title" id="my-reports-heading">
+          Sent
+          {loadState === "ready" && !hasMore ? ` · ${reports.length}` : ""}
+        </h2>
+        <p className="report-group__note">
+          Only your own reports appear here. Responders handling them can also
+          see them.
+        </p>
         <FormStatus message={actionError} />
 
         {loadState === "loading" ? (
@@ -156,9 +156,16 @@ export default function MyReportsPage({ reportRepository, submissionQueue }) {
 
         {loadState === "ready" && reports.length === 0 ? (
           <EmptyState
-            title="You have not filed any reports"
-            message="When you report flooding or request help, it will appear here with its current status."
-          />
+            title="You have not sent any reports"
+            message="Reports and requests you send will show here with their status."
+          >
+            <ActionLink to="/app/reports/new" variant="secondary">
+              Report a flood
+            </ActionLink>
+            <ActionLink to="/app/help/new" variant="secondary">
+              Ask for help
+            </ActionLink>
+          </EmptyState>
         ) : null}
 
         {loadState === "ready" && reports.length > 0 ? (
@@ -190,14 +197,18 @@ export default function MyReportsPage({ reportRepository, submissionQueue }) {
         ) : null}
 
         <Modal
-          confirmLabel="Cancel the report"
-          description="Responders keep a record of this report so the response history stays intact, but it will no longer be treated as active. This cannot be undone."
+          confirmLabel="Yes, cancel report"
+          confirmTone="danger"
+          description={`${kindBadge(pendingCancel?.kind).label} at ${
+            pendingCancel?.publicLocationLabel || "an unrecorded place"
+          }. Responders will stop working on it. They keep a record so the response history stays intact. You can't undo this.`}
+          dismissLabel="Keep report"
           onClose={() => setPendingCancel(null)}
           onConfirm={confirmCancel}
           open={Boolean(pendingCancel)}
           title="Cancel this report?"
         />
-      </Section>
+      </section>
     </>
   );
 }

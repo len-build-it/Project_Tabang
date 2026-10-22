@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth.js";
 import { FormField } from "../../components/forms/FormField.jsx";
-import ConnectivityBanner from "../../components/feedback/ConnectivityBanner.jsx";
 import EmergencyFallback from "../../components/feedback/EmergencyFallback.jsx";
+import ChoiceGroup from "../../components/forms/ChoiceGroup.jsx";
 import ErrorSummary from "../../components/forms/ErrorSummary.jsx";
 import ImageAttachments from "../../components/forms/ImageAttachments.jsx";
 import LocationPicker from "../../components/forms/LocationPicker.jsx";
 import PlacePicker from "../../components/forms/PlacePicker.jsx";
+import Icon from "../../components/ui/Icon.jsx";
 import { createHotlineRepository } from "../../services/hotlines/hotlineRepository.js";
 import { createReportRepository } from "../../services/reports/reportRepository.js";
 import {
@@ -37,42 +38,106 @@ const EMPTY_FORM = {
   peopleAffected: "1",
 };
 
-// Error key to field id, in the order the fields appear.
-const FIELD_IDS = Object.freeze({
-  severity: "report-severity",
-  need: "report-need",
-  peopleAffected: "report-people",
+const PLACE_IDS = Object.freeze({
   municipality: "report-municipality",
   barangay: "report-barangay",
   landmark: "report-landmark",
   location: "report-location",
+});
+
+const DETAIL_IDS = Object.freeze({
   description: "report-description",
   contactPhone: "report-phone",
 });
 
-function SelectField({ id, label, error, value, onChange, children }) {
+/*
+ * Error key to field id, in the order the fields appear. A flood report asks
+ * where first, because responders need the place before anything else; a
+ * help request asks what is needed first, because that decides who responds.
+ */
+const FIELD_IDS = Object.freeze({
+  flood: Object.freeze({
+    ...PLACE_IDS,
+    severity: "report-severity",
+    ...DETAIL_IDS,
+  }),
+  help: Object.freeze({
+    need: "report-need",
+    peopleAffected: "report-people",
+    ...PLACE_IDS,
+    ...DETAIL_IDS,
+  }),
+});
+
+const SEVERITY_OPTIONS = FLOOD_SEVERITIES.map((severity) => ({
+  value: severity,
+  label: SEVERITY_LABELS[severity],
+}));
+
+const NEED_ICONS = {
+  rescue: "lifebuoy",
+  medical: "aid",
+  "food-water": "waves",
+  shelter: "building",
+  other: "help",
+};
+
+const NEED_OPTIONS = HELP_NEEDS.map((need) => ({
+  value: need,
+  label: NEED_LABELS[need],
+  icon: NEED_ICONS[need],
+}));
+
+/** A number field with large − and + buttons, so nobody fights a keypad. */
+function PeopleStepper({ id, value, error, onChange }) {
   const errorId = `${id}-error`;
+  const count = Number.parseInt(value, 10);
+  const current = Number.isFinite(count) ? count : 1;
 
   return (
-    <div className="form-field">
+    <div className={error ? "form-field has-error" : "form-field"}>
       <label className="form-field__label" htmlFor={id}>
-        {label}
+        How many people need help?
       </label>
-      <select
-        aria-describedby={error ? errorId : undefined}
-        aria-invalid={error ? "true" : undefined}
-        className="form-field__input"
-        id={id}
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        {children}
-      </select>
       {error ? (
         <p className="form-field__error" id={errorId}>
+          <Icon name="alert" />
           {error}
         </p>
       ) : null}
+      <div className="stepper">
+        <button
+          aria-controls={id}
+          aria-label="Fewer people"
+          className="stepper__button"
+          disabled={current <= 1}
+          onClick={() => onChange(String(Math.max(1, current - 1)))}
+          type="button"
+        >
+          −
+        </button>
+        <input
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error ? "true" : undefined}
+          className="form-field__input stepper__value"
+          id={id}
+          inputMode="numeric"
+          min="1"
+          name="peopleAffected"
+          onChange={(event) => onChange(event.target.value)}
+          type="number"
+          value={value}
+        />
+        <button
+          aria-controls={id}
+          aria-label="More people"
+          className="stepper__button"
+          onClick={() => onChange(String(current + 1))}
+          type="button"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
@@ -195,43 +260,58 @@ export default function ReportFormPage({
   }
 
   const isFlood = kind === "flood";
+  const fieldIds = FIELD_IDS[isFlood ? "flood" : "help"];
+
+  const place = (
+    <>
+      <PlacePicker
+        errors={errors}
+        ids={fieldIds}
+        onChange={(changes) =>
+          setForm((current) => ({ ...current, ...changes }))
+        }
+        values={form}
+      />
+
+      <LocationPicker
+        error={errors.location}
+        id={fieldIds.location}
+        latitude={form.latitude}
+        longitude={form.longitude}
+        onChange={({ latitude, longitude }) =>
+          setForm((current) => ({ ...current, latitude, longitude }))
+        }
+      />
+    </>
+  );
 
   return (
-    <section className="surface-card surface-card--wide">
-      <span className="section-tag">
-        {isFlood ? "Report flooding" : "Request help"}
-      </span>
-      <p>
+    <div className="page-stack">
+      <p className="page-intro">
         {isFlood
-          ? "Tell responders where the water is and how deep it has reached."
-          : "Tell responders what you need and how many people are with you."}
+          ? "Tell responders where the water is and how deep it has reached. "
+          : "Tell responders what you need and how many people are with you. "}
+        In danger now? Call <a href="tel:911">911</a>.
       </p>
-
-      <ConnectivityBanner />
 
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
         <ErrorSummary
           attempt={failedAttempts}
           errors={errors}
-          fields={FIELD_IDS}
+          fields={fieldIds}
         />
 
-        {submissionState ? (
-          <p aria-live="polite" className="form-field__hint">
-            {SUBMISSION_STATE_COPY[submissionState]}
-          </p>
-        ) : null}
-
         {failure?.reason === "upload" ? (
-          <section className="feedback-card feedback-card--error" role="alert">
-            <h2>The photos could not be uploaded</h2>
-            <p>
-              {failure.message} Your report is saved on this phone. You can send
-              it now without the photos.
-            </p>
-            <div className="button-row">
+          <section className="notice notice--warning" role="alert">
+            <Icon className="notice__icon" name="image" />
+            <div>
+              <h2>The photos could not be uploaded</h2>
+              <p>
+                {failure.message} Your report is saved on this phone. Send it
+                now without them; responders can still act on it.
+              </p>
               <button
-                className="action-button"
+                className="action-button action-button--block"
                 disabled={submitting}
                 onClick={() => send({ skipPhotos: true })}
                 type="button"
@@ -247,104 +327,93 @@ export default function ReportFormPage({
             <p className="form-field__error" role="status">
               {failure.message}
             </p>
-            <EmergencyFallback hotlines={fallbackHotlines} />
+            <EmergencyFallback hotlines={fallbackHotlines}>
+              <Link
+                className="action-button action-button--secondary"
+                to="/app/reports"
+              >
+                Go to My reports
+              </Link>
+            </EmergencyFallback>
           </>
         ) : null}
 
         {isFlood ? (
-          <SelectField
-            error={errors.severity}
-            id={FIELD_IDS.severity}
-            label="How deep is the water?"
-            onChange={setField("severity")}
-            value={form.severity}
-          >
-            <option value="">Choose a depth</option>
-            {FLOOD_SEVERITIES.map((severity) => (
-              <option key={severity} value={severity}>
-                {SEVERITY_LABELS[severity]}
-              </option>
-            ))}
-          </SelectField>
+          <>
+            <fieldset className="field-group">
+              <legend>Where</legend>
+              {place}
+            </fieldset>
+
+            <ChoiceGroup
+              error={errors.severity}
+              id={fieldIds.severity}
+              legend="How deep is the water?"
+              name="severity"
+              onChange={setField("severity")}
+              options={SEVERITY_OPTIONS}
+              value={form.severity}
+            />
+          </>
         ) : (
           <>
-            <SelectField
+            <ChoiceGroup
               error={errors.need}
-              id={FIELD_IDS.need}
-              label="What do you need?"
+              id={fieldIds.need}
+              legend="What do you need?"
+              name="need"
               onChange={setField("need")}
+              options={NEED_OPTIONS}
               value={form.need}
-            >
-              <option value="">Choose the kind of help</option>
-              {HELP_NEEDS.map((need) => (
-                <option key={need} value={need}>
-                  {NEED_LABELS[need]}
-                </option>
-              ))}
-            </SelectField>
+            />
 
-            <FormField
+            <PeopleStepper
               error={errors.peopleAffected}
-              id={FIELD_IDS.peopleAffected}
-              inputMode="numeric"
-              label="How many people need help?"
-              name="peopleAffected"
+              id={fieldIds.peopleAffected}
               onChange={setField("peopleAffected")}
-              type="number"
               value={form.peopleAffected}
             />
+
+            <fieldset className="field-group">
+              <legend>Where</legend>
+              {place}
+            </fieldset>
           </>
         )}
 
-        <PlacePicker
-          errors={errors}
-          ids={FIELD_IDS}
-          onChange={(changes) =>
-            setForm((current) => ({ ...current, ...changes }))
-          }
-          values={form}
-        />
-
-        <LocationPicker
-          error={errors.location}
-          id={FIELD_IDS.location}
-          latitude={form.latitude}
-          longitude={form.longitude}
-          onChange={({ latitude, longitude }) =>
-            setForm((current) => ({ ...current, latitude, longitude }))
-          }
-        />
-
-        <div className="form-field">
-          <label className="form-field__label" htmlFor={FIELD_IDS.description}>
-            What is happening?
+        <div
+          className={errors.description ? "form-field has-error" : "form-field"}
+        >
+          <label className="form-field__label" htmlFor={fieldIds.description}>
+            {isFlood ? "What is happening?" : "Tell responders more"}
           </label>
-          <textarea
-            aria-describedby={
-              errors.description ? `${FIELD_IDS.description}-error` : undefined
-            }
-            aria-invalid={errors.description ? "true" : undefined}
-            className="form-field__input"
-            id={FIELD_IDS.description}
-            onChange={(event) => setField("description")(event.target.value)}
-            rows={5}
-            value={form.description}
-          />
           {errors.description ? (
             <p
               className="form-field__error"
-              id={`${FIELD_IDS.description}-error`}
+              id={`${fieldIds.description}-error`}
             >
+              <Icon name="alert" />
               {errors.description}
             </p>
           ) : null}
+          <textarea
+            aria-describedby={
+              errors.description ? `${fieldIds.description}-error` : undefined
+            }
+            aria-invalid={errors.description ? "true" : undefined}
+            className="form-field__input"
+            id={fieldIds.description}
+            onChange={(event) => setField("description")(event.target.value)}
+            rows={4}
+            value={form.description}
+          />
         </div>
 
         <FormField
           autoComplete="tel"
           error={errors.contactPhone}
-          hint="Shared only with responders handling this report."
-          id={FIELD_IDS.contactPhone}
+          hint="So responders can reach you. Shared only with responders handling this report."
+          id={fieldIds.contactPhone}
           inputMode="tel"
           label="Contact number"
           name="contactPhone"
@@ -359,19 +428,47 @@ export default function ReportFormPage({
           onChange={setAttachments}
         />
 
-        <p aria-live="polite" className="form-field__hint">
-          {progress
-            ? `Uploading photo ${progress.index} of ${progress.total} (${progress.percent}%)`
-            : ""}
-        </p>
+        {submitting ? (
+          <section className="send-status" role="status">
+            <p className="send-status__title">
+              <Icon name="loader" />
+              {SUBMISSION_STATE_COPY[SUBMISSION_STATE.sending]}
+            </p>
+            {progress ? (
+              <>
+                <progress
+                  aria-label="Photo upload progress"
+                  className="send-status__bar"
+                  max="100"
+                  value={progress.percent}
+                />
+                <p>
+                  Uploading photo {progress.index} of {progress.total} (
+                  {progress.percent}%). Keep this page open.
+                </p>
+              </>
+            ) : (
+              <p>Keep this page open.</p>
+            )}
+          </section>
+        ) : submissionState && submissionState !== SUBMISSION_STATE.sending ? (
+          <p aria-live="polite" className="form-field__hint">
+            {SUBMISSION_STATE_COPY[submissionState]}
+          </p>
+        ) : null}
 
-        <div className="button-row">
-          <button className="action-button" disabled={submitting} type="submit">
-            {submitting ? "Sending…" : "Send report"}
+        <div className="form-actions">
+          <button
+            className="action-button action-button--block"
+            disabled={submitting}
+            type="submit"
+          >
+            <Icon name={submitting ? "loader" : "send"} />
+            {submitting ? "Sending…" : isFlood ? "Send report" : "Send request"}
           </button>
           {submitting ? (
             <button
-              className="action-button action-button--secondary"
+              className="action-button action-button--secondary action-button--block"
               onClick={() => abortRef.current?.abort()}
               type="button"
             >
@@ -380,6 +477,6 @@ export default function ReportFormPage({
           ) : null}
         </div>
       </form>
-    </section>
+    </div>
   );
 }

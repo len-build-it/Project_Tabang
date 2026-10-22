@@ -274,9 +274,7 @@ describe("report form", () => {
   }
 
   function fillValidReport() {
-    fireEvent.change(screen.getByLabelText("How deep is the water?"), {
-      target: { value: "knee" },
-    });
+    fireEvent.click(screen.getByLabelText("Knee deep"));
     fireEvent.change(screen.getByLabelText("Municipality"), {
       target: { value: "Kalibo" },
     });
@@ -302,7 +300,7 @@ describe("report form", () => {
     expect(screen.queryByLabelText("Latitude")).toBeNull();
     expect(screen.queryByLabelText("Longitude")).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Use my current location" }),
+      screen.getByRole("button", { name: "Use my location" }),
     ).toBeInTheDocument();
   });
 
@@ -383,9 +381,9 @@ describe("report form", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send report" }));
 
     expect(
-      await screen.findByRole("link", { name: "(036) 262-4979" }),
+      await screen.findByRole("link", { name: /^\(036\) 262-4979/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "911" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Call 911" })).toHaveAttribute(
       "href",
       "tel:911",
     );
@@ -405,7 +403,7 @@ describe("report form", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send report" }));
 
     expect(
-      await screen.findByRole("link", { name: "911" }),
+      await screen.findByRole("link", { name: "Call 911" }),
     ).toBeInTheDocument();
   });
 });
@@ -441,12 +439,14 @@ describe("pending reports", () => {
     );
 
     expect(
-      await screen.findByText("Flood report, Poblacion, Kalibo"),
+      await screen.findByRole("heading", { name: "Poblacion, Kalibo" }),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Send now" }));
 
     await waitFor(() =>
-      expect(screen.queryByText("Flood report, Poblacion, Kalibo")).toBeNull(),
+      expect(
+        screen.queryByRole("heading", { name: "Poblacion, Kalibo" }),
+      ).toBeNull(),
     );
     expect(reportRepository.submitReport).toHaveBeenCalledWith({
       reportId: "report-9",
@@ -471,6 +471,15 @@ describe("pending reports", () => {
       />,
     );
     fireEvent.click(await screen.findByRole("button", { name: "Discard" }));
+
+    // Keeping it from the confirmation must leave it queued.
+    fireEvent.click(screen.getByRole("button", { name: "Keep report" }));
+    expect(queue.list()).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Yes, discard report" }),
+    );
 
     await waitFor(() => expect(queue.list()).toEqual([]));
     expect(reportRepository.submitReport).not.toHaveBeenCalled();
@@ -562,7 +571,7 @@ describe("REQ-019: cancel visibility", () => {
     );
 
     expect(
-      Boolean(screen.queryByRole("button", { name: "Cancel this report" })),
+      Boolean(screen.queryByRole("button", { name: "Cancel report" })),
     ).toBe(expected);
   });
 
@@ -588,9 +597,9 @@ describe("REQ-019: cancel visibility", () => {
       />,
     );
     fireEvent.click(
-      await screen.findByRole("button", { name: "Cancel this report" }),
+      await screen.findByRole("button", { name: "Cancel report" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Cancel the report" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, cancel report" }));
 
     expect(
       await screen.findByText(/no longer be cancelled/),
@@ -607,10 +616,10 @@ describe("REQ-021: account details", () => {
     fireEvent.change(await screen.findByLabelText("Barangay"), {
       target: { value: "  Estancia " },
     });
-    fireEvent.change(screen.getByLabelText("Mobile number"), {
+    fireEvent.change(screen.getByLabelText("Phone number"), {
       target: { value: "+63 999 888 7777" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     expect(
       await screen.findByText("Your details have been saved."),
@@ -626,10 +635,10 @@ describe("REQ-021: account details", () => {
     const updateOwnProfile = vi.fn();
 
     renderWithSession(<AccountPage />, { actions: { updateOwnProfile } });
-    fireEvent.change(await screen.findByLabelText("Mobile number"), {
+    fireEvent.change(await screen.findByLabelText("Phone number"), {
       target: { value: "12345" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     expect(
       await screen.findByText(/Philippine mobile number/),

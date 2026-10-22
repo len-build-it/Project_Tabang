@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import Icon from "../ui/Icon.jsx";
 import {
   UPLOAD_LIMITS,
   describeCountRejection,
@@ -71,25 +72,60 @@ export default function ImageAttachments({ attachments, onChange, disabled }) {
     onChange(attachments.filter((attachment) => attachment.id !== id));
   }
 
+  const full = attachments.length >= UPLOAD_LIMITS.maxFiles;
+
   return (
-    <fieldset className="form-fieldset">
-      <legend>Photos (optional)</legend>
+    <fieldset className="photo-field">
+      <legend>
+        Photos{" "}
+        <span className="field-optional">
+          (optional, up to {UPLOAD_LIMITS.maxFiles})
+        </span>
+      </legend>
       <p className="form-field__hint" id={`${inputId}-hint`}>
-        Up to {UPLOAD_LIMITS.maxFiles} photos, {UPLOAD_LIMITS.maxBytes /
-          (1024 * 1024)}{" "}
-        MB each. Location data embedded in your photos is removed before upload.
+        {UPLOAD_LIMITS.maxBytes / (1024 * 1024)} MB each. Location data
+        embedded in your photos is removed before upload.
       </p>
 
-      <input
-        accept={UPLOAD_LIMITS.allowedTypes.join(",")}
-        aria-describedby={`${inputId}-hint`}
-        className="form-field__input"
-        disabled={disabled || busy || attachments.length >= UPLOAD_LIMITS.maxFiles}
-        id={inputId}
-        multiple
-        onChange={handleFiles}
-        type="file"
-      />
+      <ul className="photo-tiles">
+        {attachments.map((attachment, index) => (
+          <li className="photo-tile" key={attachment.id}>
+            <img
+              alt={`Photo ${index + 1} preview`}
+              src={attachment.previewUrl}
+            />
+            <button
+              aria-label={`Remove photo ${index + 1}`}
+              className="link-button"
+              disabled={disabled}
+              onClick={() => remove(attachment.id)}
+              type="button"
+            >
+              <Icon name="x" />
+              Remove
+            </button>
+          </li>
+        ))}
+
+        {full ? null : (
+          <li className="photo-tile">
+            <input
+              accept={UPLOAD_LIMITS.allowedTypes.join(",")}
+              aria-describedby={`${inputId}-hint`}
+              className="visually-hidden photo-add__input"
+              disabled={disabled || busy}
+              id={inputId}
+              multiple
+              onChange={handleFiles}
+              type="file"
+            />
+            <label className="photo-add" htmlFor={inputId}>
+              <Icon name="camera" />
+              Add photo
+            </label>
+          </li>
+        )}
+      </ul>
 
       <p aria-live="polite" className="form-field__hint">
         {busy ? "Checking your photos…" : ""}
@@ -99,25 +135,6 @@ export default function ImageAttachments({ attachments, onChange, disabled }) {
         <ul className="form-field__error" role="alert">
           {rejections.map((reason) => (
             <li key={reason}>{reason}</li>
-          ))}
-        </ul>
-      ) : null}
-
-      {attachments.length > 0 ? (
-        <ul className="attachment-list">
-          {attachments.map((attachment) => (
-            <li className="attachment-item" key={attachment.id}>
-              <img alt="" height="64" src={attachment.previewUrl} width="64" />
-              <span>{attachment.originalName}</span>
-              <button
-                className="action-button action-button--secondary"
-                disabled={disabled}
-                onClick={() => remove(attachment.id)}
-                type="button"
-              >
-                Remove
-              </button>
-            </li>
           ))}
         </ul>
       ) : null}

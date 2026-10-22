@@ -111,7 +111,7 @@ describe("my reports route", () => {
     );
 
     expect(
-      await screen.findByText("You have not filed any reports"),
+      await screen.findByText("You have not sent any reports"),
     ).toBeInTheDocument();
   });
 
@@ -124,7 +124,7 @@ describe("my reports route", () => {
       <MyReportsPage reportRepository={{ listMyReports, cancelReport: vi.fn() }} />,
     );
 
-    await screen.findByText("You have not filed any reports");
+    await screen.findByText("You have not sent any reports");
     expect(listMyReports).toHaveBeenCalledWith({ reporterId: "resident-1" });
     expect(listMyReports).toHaveBeenCalledTimes(1);
   });
@@ -146,17 +146,17 @@ describe("my reports route", () => {
     );
 
     fireEvent.click(
-      await screen.findByRole("button", { name: "Cancel this report" }),
+      await screen.findByRole("button", { name: "Cancel report" }),
     );
 
     // Dismissing the dialog must not perform the destructive action.
-    fireEvent.click(screen.getByRole("button", { name: "Go back" }));
+    fireEvent.click(screen.getByRole("button", { name: "Keep report" }));
     expect(cancelReport).not.toHaveBeenCalled();
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Cancel this report" }),
+      screen.getByRole("button", { name: "Cancel report" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Cancel the report" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, cancel report" }));
 
     expect(cancelReport).toHaveBeenCalledWith({ reportId: "report-1" });
   });

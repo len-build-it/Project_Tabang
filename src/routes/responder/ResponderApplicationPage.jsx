@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../app/providers/useAuth.js";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
 import { FormField, FormStatus } from "../../components/forms/FormField.jsx";
-import { Badge, Section, Skeleton } from "../../components/ui/Primitives.jsx";
+import Icon from "../../components/ui/Icon.jsx";
+import { Badge, Skeleton } from "../../components/ui/Primitives.jsx";
 import { prepareImageForUpload } from "../../services/uploads/prepareImage.js";
 import {
   APPLICATION_STATUS,
@@ -14,26 +16,47 @@ import {
 const STATUS_COPY = {
   [APPLICATION_STATUS.pending]: {
     tone: "warning",
-    label: "Under review",
+    icon: "clock",
+    label: "Pending review",
+    heading: "Your application is being reviewed",
     message:
-      "Your application is with a reviewer. You will keep resident access until it is approved. Applying does not grant responder access.",
+      "You'll see the result here. You can keep using Tabang as a resident until it is approved. Applying does not grant responder access.",
   },
   [APPLICATION_STATUS.approved]: {
     tone: "success",
+    icon: "checkCircle",
     label: "Approved",
+    heading: "You're a responder",
     message:
-      "Your responder access has been approved. Sign out and back in if you do not see responder routes yet.",
+      "You can now work incidents and publish advisories. Sign out and back in if you do not see the responder workspace yet.",
   },
   [APPLICATION_STATUS.rejected]: {
     tone: "danger",
-    label: "Not approved",
+    icon: "xCircle",
+    label: "Rejected",
+    heading: "Your application wasn't approved",
     message:
-      "A reviewer did not approve this application. Read their notes below; you can correct your details and apply again.",
+      "Read the reviewer's notes below; you can correct your details and apply again.",
   },
 };
 
+const EVIDENCE_SLOTS = [
+  {
+    slot: "identity",
+    id: "identity-document",
+    label: "Government ID",
+    addLabel: "Add ID photo",
+  },
+  {
+    slot: "selfie",
+    id: "identity-selfie",
+    label: "Selfie",
+    addLabel: "Add selfie",
+  },
+];
+
 export default function ResponderApplicationPage({ applicationRepository }) {
-  const { user, profile } = useAuth();
+  const { user, profile, isResponder } = useAuth();
   const uid = user?.uid;
   const repository = useMemo(
     () => applicationRepository ?? createApplicationRepository(),
@@ -49,6 +72,9 @@ export default function ResponderApplicationPage({ applicationRepository }) {
     consentAccepted: false,
   });
   const [documents, setDocuments] = useState({ identity: null, selfie: null });
+  // Preview URLs for the chosen photos; released when replaced or on leave.
+  const [previews, setPreviews] = useState({ identity: null, selfie: null });
+  const previewsRef = useRef(previews);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -98,6 +124,21 @@ export default function ResponderApplicationPage({ applicationRepository }) {
     load(activeRef.current);
   }, [load]);
 
+  useEffect(() => {
+    previewsRef.current = previews;
+  }, [previews]);
+
+  useEffect(
+    () => () => {
+      for (const url of Object.values(previewsRef.current)) {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      }
+    },
+    [],
+  );
+
   const setField = (field) => (value) =>
     setForm((current) => ({ ...current, [field]: value }));
 
@@ -116,6 +157,13 @@ export default function ResponderApplicationPage({ applicationRepository }) {
 
     setErrors((current) => ({ ...current, evidence: undefined }));
     setDocuments((current) => ({ ...current, [slot]: prepared.file }));
+    setPreviews((current) => {
+      if (current[slot]) {
+        URL.revokeObjectURL(current[slot]);
+      }
+
+      return { ...current, [slot]: URL.createObjectURL(prepared.file) };
+    });
   }
 
   async function handleSubmit(event) {
@@ -180,61 +228,68 @@ export default function ResponderApplicationPage({ applicationRepository }) {
     const copy = STATUS_COPY[existing.status] ?? STATUS_COPY.pending;
 
     return (
-      <Section id="application" title="Application status">
-        <div className="surface-card">
-          <Badge tone={copy.tone}>{copy.label}</Badge>
-          <p>{copy.message}</p>
-          <div className="detail-list">
-            <span>
-              <strong>Organization</strong>
-              {existing.organization}
-            </span>
-            <span>
-              <strong>Municipality</strong>
-              {existing.municipality}
-            </span>
-          </div>
-          {existing.reviewNotes ? (
-            <p>
-              <strong>Reviewer notes:</strong> {existing.reviewNotes}
-            </p>
-          ) : null}
-          {existing.status === APPLICATION_STATUS.rejected ? (
-            <div className="button-row">
-              <button
-                className="action-button"
-                onClick={() => {
-                  setForm((current) => ({
-                    ...current,
-                    organization: existing.organization,
-                    badgeNumber: existing.badgeNumber ?? "",
-                    municipality: existing.municipality,
-                    consentAccepted: false,
-                  }));
-                  setReapplying(true);
-                }}
-                type="button"
-              >
-                Apply again
-              </button>
-            </div>
-          ) : null}
+      <section aria-labelledby="application-status" className="status-card">
+        <Badge icon={copy.icon} srPrefix="Application: " tone={copy.tone}>
+          {copy.label}
+        </Badge>
+        <h2 id="application-status">{copy.heading}</h2>
+        <p>{copy.message}</p>
+        <div className="detail-list">
+          <span>
+            <strong>Organization</strong>
+            {existing.organization}
+          </span>
+          <span>
+            <strong>Municipality</strong>
+            {existing.municipality}
+          </span>
         </div>
-      </Section>
+        {existing.reviewNotes ? (
+          <div className="review-notes">
+            <p className="review-notes__label">Reviewer&apos;s notes</p>
+            <p>{existing.reviewNotes}</p>
+          </div>
+        ) : null}
+        {existing.status === APPLICATION_STATUS.approved && isResponder ? (
+          <Link className="action-button action-button--block" to="/responder">
+            Open responder workspace
+            <Icon name="arrowR" />
+          </Link>
+        ) : null}
+        {existing.status === APPLICATION_STATUS.rejected ? (
+          <button
+            className="action-button action-button--block"
+            onClick={() => {
+              setForm((current) => ({
+                ...current,
+                organization: existing.organization,
+                badgeNumber: existing.badgeNumber ?? "",
+                municipality: existing.municipality,
+                consentAccepted: false,
+              }));
+              setReapplying(true);
+            }}
+            type="button"
+          >
+            Apply again
+          </button>
+        ) : null}
+      </section>
     );
   }
 
   return (
-    <Section
-      id="application"
-      title="Application form"
-      description="Submitting this does not grant responder access. A reviewer checks every application."
-    >
+    <div className="page-stack">
+      <p className="page-intro">
+        A reviewer checks your ID and selfie before you can use the responder
+        workspace. Sending this does not grant responder access on its own.
+      </p>
+
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
         <FormStatus message={formError} />
 
-        <div className="surface-card">
-          <h3>Your verified details</h3>
+        <section aria-labelledby="applicant-heading" className="surface-card">
+          <h2 id="applicant-heading">Applying as</h2>
           <p>
             These come from your account and are not re-entered here, so an
             application always matches the account it belongs to.
@@ -253,10 +308,11 @@ export default function ResponderApplicationPage({ applicationRepository }) {
               {profile?.barangay || "Not provided"}
             </span>
           </div>
-        </div>
+        </section>
 
         <FormField
           error={errors.organization}
+          hint="LGU, MDRRMO, barangay or volunteer group"
           label="Organization"
           name="organization"
           onChange={setField("organization")}
@@ -277,7 +333,9 @@ export default function ResponderApplicationPage({ applicationRepository }) {
           value={form.municipality}
         />
 
-        <fieldset className="form-fieldset">
+        <fieldset
+          className={errors.evidence ? "photo-field has-error" : "photo-field"}
+        >
           <legend>Identity evidence</legend>
           <p className="form-field__hint">
             A government ID and a selfie. These are uploaded privately, are
@@ -285,44 +343,62 @@ export default function ResponderApplicationPage({ applicationRepository }) {
             is recorded.
           </p>
 
-          <div className="form-field">
-            <label className="form-field__label" htmlFor="identity-document">
-              Government ID
-            </label>
-            <input
-              accept="image/jpeg,image/png,image/webp"
-              className="form-field__input"
-              id="identity-document"
-              onChange={(event) =>
-                pickDocument("identity", event.target.files?.[0])
-              }
-              type="file"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-field__label" htmlFor="identity-selfie">
-              Selfie
-            </label>
-            <input
-              accept="image/jpeg,image/png,image/webp"
-              className="form-field__input"
-              id="identity-selfie"
-              onChange={(event) =>
-                pickDocument("selfie", event.target.files?.[0])
-              }
-              type="file"
-            />
-          </div>
-
           {errors.evidence ? (
             <p className="form-field__error" role="alert">
+              <Icon name="alert" />
               {errors.evidence}
             </p>
           ) : null}
+
+          <div className="evidence-grid">
+            {EVIDENCE_SLOTS.map(({ slot, id, label, addLabel }) => (
+              <div className="evidence-slot" key={slot}>
+                <label className="form-field__label" htmlFor={id}>
+                  {label}
+                </label>
+                <input
+                  accept="image/jpeg,image/png,image/webp"
+                  className="visually-hidden photo-add__input"
+                  id={id}
+                  onChange={(event) => {
+                    pickDocument(slot, event.target.files?.[0]);
+                    event.target.value = "";
+                  }}
+                  type="file"
+                />
+                {previews[slot] ? (
+                  <>
+                    <img
+                      alt={`${label} preview`}
+                      className="evidence-slot__preview"
+                      src={previews[slot]}
+                    />
+                    <label className="link-button" htmlFor={id}>
+                      Replace
+                    </label>
+                  </>
+                ) : (
+                  <label className="photo-add photo-add--wide" htmlFor={id}>
+                    <Icon name="camera" />
+                    {addLabel}
+                  </label>
+                )}
+              </div>
+            ))}
+          </div>
         </fieldset>
 
-        <div className="form-field">
+        <div
+          className={
+            errors.consentAccepted ? "form-field has-error" : "form-field"
+          }
+        >
+          {errors.consentAccepted ? (
+            <p className="form-field__error">
+              <Icon name="alert" />
+              {errors.consentAccepted}
+            </p>
+          ) : null}
           <label className="consent-row" htmlFor="consent">
             <input
               checked={form.consentAccepted}
@@ -335,17 +411,19 @@ export default function ResponderApplicationPage({ applicationRepository }) {
             <span>
               I agree that Tabang may store and review my identity documents to
               verify responder status, under policy version {CONSENT_VERSION}.
+              Read the <Link to="/privacy">privacy policy</Link>.
             </span>
           </label>
-          {errors.consentAccepted ? (
-            <p className="form-field__error">{errors.consentAccepted}</p>
-          ) : null}
         </div>
 
-        <button className="action-button" disabled={submitting} type="submit">
-          {submitting ? "Submitting…" : "Submit application"}
+        <button
+          className="action-button action-button--block"
+          disabled={submitting}
+          type="submit"
+        >
+          {submitting ? "Sending…" : "Send application"}
         </button>
       </form>
-    </Section>
+    </div>
   );
 }

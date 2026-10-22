@@ -80,10 +80,9 @@ describe("resident home", () => {
     renderHome({ listRecentAdvisories: vi.fn().mockResolvedValue([]) });
 
     await screen.findByText("No advisories right now");
-    expect(screen.getByRole("link", { name: "Report flood" })).toHaveAttribute(
-      "href",
-      "/app/reports/new",
-    );
+    expect(
+      screen.getByRole("link", { name: "Report a flood" }),
+    ).toHaveAttribute("href", "/app/reports/new");
     expect(screen.getByRole("link", { name: "Request help" })).toHaveAttribute(
       "href",
       "/app/help/new",
@@ -193,7 +192,7 @@ describe("resident shell navigation", () => {
   it("does not render a decorative device status bar", async () => {
     renderShell();
 
-    await screen.findByText("What do you need right now?");
+    await screen.findByRole("heading", { level: 1, name: "What do you need?" });
     expect(screen.queryByText("9:41")).not.toBeInTheDocument();
   });
 });

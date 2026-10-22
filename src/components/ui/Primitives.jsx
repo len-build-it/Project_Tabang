@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import Icon from "./Icon.jsx";
 
 export function PageHeading({ children, className = "" }) {
   const headingRef = useRef(null);
@@ -46,16 +47,28 @@ export function Section({ title, description, action, children, id }) {
 
 const BADGE_TONES = new Set([
   "neutral",
+  "plain",
   "info",
   "success",
   "warning",
   "danger",
 ]);
 
-export function Badge({ tone = "neutral", children }) {
+/**
+ * A status pill. `icon` repeats the meaning as a shape, so colour is never
+ * the only signal, and `srPrefix` says which question the badge answers
+ * ("Status: ", "Verification: ") for screen-reader users who hear it alone.
+ */
+export function Badge({ tone = "neutral", icon, srPrefix, children }) {
   const safeTone = BADGE_TONES.has(tone) ? tone : "neutral";
 
-  return <span className={`badge badge--${safeTone}`}>{children}</span>;
+  return (
+    <span className={`badge badge--${safeTone}`}>
+      {icon ? <Icon name={icon} /> : null}
+      {srPrefix ? <span className="visually-hidden">{srPrefix}</span> : null}
+      {children}
+    </span>
+  );
 }
 
 export function ActionLink({ to, children, variant = "primary", ...rest }) {

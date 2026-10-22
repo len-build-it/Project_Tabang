@@ -1,5 +1,5 @@
 /*
- * Contrast check for the restored navy palette.
+ * Contrast check for the navy palette and the v2 tactile surfaces.
  *
  * The legacy design leaned on translucent white text over a blue gradient,
  * which looks right and measures badly: 45% white on a card is 2.79:1. These
@@ -13,14 +13,28 @@ const L=(r)=>0.2126*lin(r[0])+0.7152*lin(r[1])+0.0722*lin(r[2]);
 const over=(fg,a,bg)=>fg.map((c,i)=>c*a+bg[i]*(1-a));
 const R=(a,b)=>{const l1=L(a),l2=L(b);const[h,l]=l1>l2?[l1,l2]:[l2,l1];return (h+0.05)/(l+0.05);};
 const W=hex('#ffffff'), SHELL=hex('#1a4599');
-const CARD=over(W,0.08,SHELL), INPUT=over(W,0.1,CARD), NAV=over(hex('#0a2470'),0.9,SHELL);
+const CARD=over(W,0.08,SHELL), RAISED=over(W,0.16,SHELL), INPUT=over(hex('#071852'),0.55,SHELL), NAV=hex('#0d2668');
+// v2 tactile surfaces: the nav's pressed well and the dark badge pill.
+const NAV_WELL=over(hex('#000000'),0.28,NAV), BADGE=over(hex('#14286e'),0.75,SHELL);
 const rows=[
  ['white on card',W,CARD],['white on shell',W,SHELL],
  ['ink-soft 82% on card',over(W,0.82,CARD),CARD],
  ['ink-soft 82% on shell',over(W,0.82,SHELL),SHELL],
  ['ink-faint 72% on card',over(W,0.72,CARD),CARD],
  ['placeholder 83% on input',over(W,0.83,INPUT),INPUT],
- ['nav inactive 60% on nav',over(W,0.6,NAV),NAV],
+ ['nav inactive 82% on nav',over(W,0.82,NAV),NAV],
+ ['nav active #fac37b in well',hex('#fac37b'),NAV_WELL],
+ ['offline banner ink on #fac37b',hex('#1c1c1e'),hex('#fac37b')],
+ ['danger button ink on #f25c5c',hex('#1c1c1e'),hex('#f25c5c')],
+ ['field text on well',W,INPUT],
+ ['badge info on pill',hex('#93c5fd'),BADGE],
+ ['badge warning on pill',hex('#fac37b'),BADGE],
+ ['badge success on pill',hex('#55efc4'),BADGE],
+ ['badge danger text on pill',hex('#ffbbbb'),BADGE],
+ ['action row description 82% on raised card',over(W,0.82,RAISED),RAISED],
+ ['white on raised card',W,RAISED],
+ ['badge neutral 82% on pill',over(W,0.82,BADGE),BADGE],
+ ['danger outline text #ffbbbb on card',hex('#ffbbbb'),CARD],
  ['button ink on orange',hex('#1c1c1e'),hex('#f5900a')],
  ['button ink on orange-strong',hex('#1c1c1e'),hex('#e07d00')],
  ['primary-text on card',hex('#fac37b'),CARD],

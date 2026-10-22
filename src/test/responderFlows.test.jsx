@@ -180,12 +180,12 @@ describe("REQ-027: responder application", () => {
     expect(
       await screen.findByText("Your application could not be loaded"),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Submit application" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Send application" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(
-      await screen.findByRole("button", { name: "Submit application" }),
+      await screen.findByRole("button", { name: "Send application" }),
     ).toBeInTheDocument();
   });
 
@@ -211,7 +211,7 @@ describe("REQ-027: responder application", () => {
 
     expect(screen.getByLabelText("Organization")).toHaveValue("Aklan MDRRMO");
     expect(screen.getByLabelText("Badge or employee number")).toHaveValue("MD-2291");
-    expect(screen.getByRole("button", { name: "Submit application" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send application" })).toBeInTheDocument();
   });
 });
 
@@ -278,13 +278,13 @@ describe("REQ-031: modal keeps focus inside", () => {
     const confirm = screen.getByRole("button", { name: "Confirm" });
 
     await act(async () => {});
+    // The safe choice takes the initial focus; it is the last button.
     expect(back).toHaveFocus();
 
-    confirm.focus();
-    fireEvent.keyDown(confirm, { key: "Tab" });
-    expect(back).toHaveFocus();
-
-    fireEvent.keyDown(back, { key: "Tab", shiftKey: true });
+    fireEvent.keyDown(back, { key: "Tab" });
     expect(confirm).toHaveFocus();
+
+    fireEvent.keyDown(confirm, { key: "Tab", shiftKey: true });
+    expect(back).toHaveFocus();
   });
 });
