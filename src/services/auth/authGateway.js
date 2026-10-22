@@ -55,6 +55,27 @@ export function createAuthGateway({ client } = {}) {
     }
   }
 
+  function notifySession() {
+    for (const listener of listeners) {
+      try {
+        listener(currentSession);
+      } catch {
+        // Ignore listener exceptions
+      }
+    }
+  }
+
+  /**
+   * Runs a sign-in or sign-up. The session is announced as pending only once
+   * the server has accepted it: announcing it before meant a wrong password
+   * left the sign-in form replaced by "Checking your session", with the
+   * error never shown.
+   */
+  async function authenticate(request) {
+    await request();
+    await refreshSession();
+  }
+
   async function refreshSession() {
     const seq = ++sessionSeq;
     notifyPending();
@@ -73,13 +94,7 @@ export function createAuthGateway({ client } = {}) {
 
     hasLoaded = true;
     currentSession = session;
-    for (const listener of listeners) {
-      try {
-        listener(currentSession);
-      } catch {
-        // Ignore listener exceptions
-      }
-    }
+    notifySession();
     return currentSession;
   }
 
@@ -113,22 +128,22 @@ export function createAuthGateway({ client } = {}) {
     },
 
     async signIn({ email, password }) {
-      notifyPending();
-      await api().post("/api/app/sign-in", { email, password });
-      await refreshSession();
+      await authenticate(() =>
+        api().post("/api/app/sign-in", { email, password }),
+      );
     },
 
     async register({ email, password, displayName, phone, barangay }) {
-      notifyPending();
-      await api().post("/api/app/sign-up", {
-        email,
-        password,
-        confirmPassword: password,
-        displayName,
-        phone,
-        barangay,
-      });
-      await refreshSession();
+      await authenticate(() =>
+        api().post("/api/app/sign-up", {
+          email,
+          password,
+          confirmPassword: password,
+          displayName,
+          phone,
+          barangay,
+        }),
+      );
     },
 
     async updateOwnProfile(uid, { displayName, phone, barangay }) {
