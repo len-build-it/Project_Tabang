@@ -35,8 +35,8 @@ describe("authentication forms", () => {
     const signIn = vi.fn();
     renderRoute("/login", { signIn });
 
-    await screen.findByLabelText("Email address");
-    fill("Email address", "not-an-email");
+    await screen.findByLabelText("Email");
+    fill("Email", "not-an-email");
     submit("Sign in");
 
     expect(
@@ -48,11 +48,11 @@ describe("authentication forms", () => {
   it("associates an inline error with its input for assistive technology", async () => {
     renderRoute("/login");
 
-    await screen.findByLabelText("Email address");
-    fill("Email address", "not-an-email");
+    await screen.findByLabelText("Email");
+    fill("Email", "not-an-email");
     submit("Sign in");
 
-    const input = await screen.findByLabelText("Email address");
+    const input = await screen.findByLabelText("Email");
 
     await waitFor(() => {
       expect(input).toHaveAttribute("aria-invalid", "true");
@@ -69,8 +69,8 @@ describe("authentication forms", () => {
     const signIn = vi.fn().mockRejectedValue({ code: "invalid_credentials" });
     renderRoute("/login", { signIn });
 
-    await screen.findByLabelText("Email address");
-    fill("Email address", "resident@example.test");
+    await screen.findByLabelText("Email");
+    fill("Email", "resident@example.test");
     fill("Password", "correct horse battery");
     submit("Sign in");
 
@@ -95,8 +95,8 @@ describe("authentication forms", () => {
 
     await screen.findByLabelText("Full name");
     fill("Full name", "  Ana  Cruz ");
-    fill("Email address", "Ana@Example.TEST");
-    fill("Mobile number", "+63 917 123 4567");
+    fill("Email", "Ana@Example.TEST");
+    fill("Phone number", "+63 917 123 4567");
     fill("Barangay", "Poblacion");
     fill("Password", "flood-ready-2026");
     fill("Confirm password", "flood-ready-2026");
@@ -124,8 +124,8 @@ describe("authentication forms", () => {
 
     await screen.findByLabelText("Full name");
     fill("Full name", "Ana Cruz");
-    fill("Email address", "ana@example.test");
-    fill("Mobile number", "09171234567");
+    fill("Email", "ana@example.test");
+    fill("Phone number", "09171234567");
     fill("Barangay", "Poblacion");
     fill("Password", "flood-ready-2026");
     fill("Confirm password", "flood-ready-2025");
@@ -143,8 +143,8 @@ describe("authentication forms", () => {
       .mockRejectedValue({ code: "invalid_credentials" });
     renderRoute("/reset-password", { sendPasswordReset });
 
-    await screen.findByLabelText("Email address");
-    fill("Email address", "unknown@example.test");
+    await screen.findByLabelText("Email");
+    fill("Email", "unknown@example.test");
     submit("Send reset link");
 
     expect(await screen.findByRole("status")).toHaveTextContent(

@@ -254,6 +254,9 @@ describe("incident detail route", () => {
 
     renderDetail(repository);
     fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
+    // Rejecting changes what the reporter sees, so it asks first.
+    expect(repository.verifyIncident).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Yes, reject" }));
 
     await waitFor(() =>
       expect(repository.verifyIncident).toHaveBeenCalledWith({
@@ -305,14 +308,14 @@ describe("incident detail route", () => {
     ).toHaveAttribute("src", "https://storage.example/signed-a");
     expect(repository.getPhotoUrls).toHaveBeenCalledWith(["resident-1/report-1/a.jpg"]);
     expect(
-      screen.getByRole("link", { name: "Open the reported location in Google Maps" }),
+      screen.getByRole("link", { name: "Open in Google Maps" }),
     ).toHaveAttribute(
       "href",
       "https://www.google.com/maps/search/?api=1&query=11.7061,122.3648",
     );
     expect(screen.getByText("Knee deep")).toBeInTheDocument();
     expect(screen.getByText("Not yet verified")).toBeInTheDocument();
-    expect(screen.getByText(/near Beside the market/)).toBeInTheDocument();
+    expect(screen.getByText(/Landmark: Beside the market/)).toBeInTheDocument();
   });
 
   it("REQ-010: shows 'Photo unavailable' when a photo fails to load", async () => {
@@ -355,7 +358,7 @@ describe("incident detail route", () => {
       await screen.findByText("Unclaimed to Acknowledged"),
     ).toBeInTheDocument();
     expect(screen.getByText("Claimed and acknowledged.")).toBeInTheDocument();
-    expect(screen.getAllByText("Responder").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^Responder · /).length).toBeGreaterThan(0);
   });
 
   it("shows a missing incident without leaking anything", async () => {

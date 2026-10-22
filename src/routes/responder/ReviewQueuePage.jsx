@@ -3,7 +3,8 @@ import EmptyState from "../../components/feedback/EmptyState.jsx";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
 import Modal from "../../components/feedback/Modal.jsx";
 import { FormStatus } from "../../components/forms/FormField.jsx";
-import { Badge, Section, Skeleton } from "../../components/ui/Primitives.jsx";
+import Icon from "../../components/ui/Icon.jsx";
+import { Badge, Skeleton } from "../../components/ui/Primitives.jsx";
 import { describeActionError } from "../../services/errors/describeActionError.js";
 import { createReviewRepository } from "../../services/responders/reviewRepository.js";
 
@@ -102,7 +103,7 @@ export default function ReviewQueuePage({ reviewRepository }) {
               message: `Decision recorded for ${decision.application.applicantName || "the applicant"}. Their identity documents were deleted.`,
             }
           : {
-              tone: "error",
+              tone: "warning",
               message: `Decision recorded for ${decision.application.applicantName || "the applicant"}, but evidence deletion is pending: the identity documents could not be deleted. Ask an administrator to remove them.`,
             },
       );
@@ -114,12 +115,22 @@ export default function ReviewQueuePage({ reviewRepository }) {
     }
   }
 
+  const pendingName =
+    pendingDecision?.application.applicantName || "this applicant";
+
   return (
-    <Section
-      id="review-queue"
-      title="Responder applications"
-      description="Approving grants responder access immediately. Identity documents are deleted once you record a decision."
-    >
+    <div className="page-stack">
+      <p className="page-intro">
+        Approving grants responder access immediately. Identity documents are
+        deleted once you record a decision.
+      </p>
+
+      {loadState === "ready" ? (
+        <p className="report-group__note" role="status">
+          {applications.length} waiting for review
+        </p>
+      ) : null}
+
       <FormStatus message={status?.message} tone={status?.tone} />
 
       {loadState === "loading" ? (
@@ -137,99 +148,112 @@ export default function ReviewQueuePage({ reviewRepository }) {
 
       {loadState === "ready" && applications.length === 0 ? (
         <EmptyState
+          icon="checkCircle"
           title="No applications waiting"
           message="New responder applications appear here as soon as they are submitted."
         />
       ) : null}
 
       {loadState === "ready" && applications.length > 0 ? (
-        <ul className="report-list">
-          {applications.map((application) => (
-            <li className="report-card" key={application.id}>
-              <div className="report-card__meta">
-                <Badge tone="warning">Pending</Badge>
-                <span>{formatWhen(application.submittedAtMillis)}</span>
-              </div>
+        <ul className="report-list report-list--wide">
+          {applications.map((application) => {
+            const name = application.applicantName || "Name not provided";
 
-              <h3 className="report-card__title">
-                {application.applicantName || "Name not provided"}
-              </h3>
+            return (
+              <li className="report-card" key={application.id}>
+                <div className="report-card__top">
+                  <Badge icon="clock" srPrefix="Application: " tone="warning">
+                    Pending review
+                  </Badge>
+                  <p className="report-card__time">
+                    Applied {formatWhen(application.submittedAtMillis)}
+                  </p>
+                </div>
 
-              <div className="detail-list">
-                <span>
-                  <strong>Email</strong>
-                  {application.applicantEmail || "Not provided"}
-                </span>
-                <span>
-                  <strong>Organization</strong>
-                  {application.organization}
-                </span>
-                <span>
-                  <strong>Badge number</strong>
-                  {application.badgeNumber}
-                </span>
-                <span>
-                  <strong>Municipality</strong>
-                  {application.municipality}
-                </span>
-                <span>
-                  <strong>Consent version</strong>
-                  {application.consentVersion}
-                </span>
-              </div>
+                <div>
+                  <h2 className="report-card__title">{name}</h2>
+                  <p className="report-card__detail">
+                    {application.applicantEmail || "Email not provided"}
+                  </p>
+                </div>
 
-              <div className="button-row">
-                {[
-                  ["ID", application.identityDocumentPath],
-                  ["selfie", application.selfiePath],
-                ]
-                  .filter(([, path]) => path)
-                  .map(([label, path]) =>
-                    evidenceLinks[path] ? (
-                      <a
-                        className="action-button action-button--secondary"
-                        href={evidenceLinks[path]}
-                        key={path}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        Open the {label} (link expires in 5 minutes)
-                      </a>
-                    ) : (
-                      <button
-                        className="action-button action-button--secondary"
-                        key={path}
-                        onClick={() => fetchEvidenceLink(path)}
-                        type="button"
-                      >
-                        View {label}
-                      </button>
-                    ),
-                  )}
-              </div>
+                <dl className="fact-list fact-list--compact">
+                  <div>
+                    <dt>Organization</dt>
+                    <dd>{application.organization}</dd>
+                  </div>
+                  <div>
+                    <dt>Badge number</dt>
+                    <dd>{application.badgeNumber}</dd>
+                  </div>
+                  <div>
+                    <dt>Municipality</dt>
+                    <dd>{application.municipality}</dd>
+                  </div>
+                  <div>
+                    <dt>Consent version</dt>
+                    <dd>{application.consentVersion}</dd>
+                  </div>
+                </dl>
 
-              <div className="button-row">
-                <button
-                  className="action-button"
-                  onClick={() =>
-                    setPendingDecision({ application, approve: true })
-                  }
-                  type="button"
-                >
-                  Approve
-                </button>
-                <button
-                  className="action-button action-button--secondary"
-                  onClick={() =>
-                    setPendingDecision({ application, approve: false })
-                  }
-                  type="button"
-                >
-                  Reject
-                </button>
-              </div>
-            </li>
-          ))}
+                {/* Evidence is opened on purpose, never shown in the list. */}
+                <div className="button-pair">
+                  {[
+                    ["ID", "idcard", application.identityDocumentPath],
+                    ["selfie", "user", application.selfiePath],
+                  ]
+                    .filter(([, , path]) => path)
+                    .map(([label, icon, path]) =>
+                      evidenceLinks[path] ? (
+                        <a
+                          className="action-button action-button--secondary"
+                          href={evidenceLinks[path]}
+                          key={path}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <Icon name="ext" />
+                          Open the {label} (new tab, link expires in 5 minutes)
+                        </a>
+                      ) : (
+                        <button
+                          className="action-button action-button--secondary"
+                          key={path}
+                          onClick={() => fetchEvidenceLink(path)}
+                          type="button"
+                        >
+                          <Icon name={icon} />
+                          View {label}
+                        </button>
+                      ),
+                    )}
+                </div>
+
+                <div className="button-pair">
+                  <button
+                    aria-label={`Approve ${name}`}
+                    className="action-button"
+                    onClick={() =>
+                      setPendingDecision({ application, approve: true })
+                    }
+                    type="button"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    aria-label={`Reject ${name}`}
+                    className="action-button action-button--danger-outline"
+                    onClick={() =>
+                      setPendingDecision({ application, approve: false })
+                    }
+                    type="button"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
 
@@ -239,6 +263,7 @@ export default function ReviewQueuePage({ reviewRepository }) {
             ? "Approve and grant access"
             : "Reject the application"
         }
+        confirmTone={pendingDecision?.approve ? "primary" : "danger"}
         description={
           pendingDecision?.approve
             ? "This grants responder access immediately and deletes the identity documents. Only the decision, your notes, your account, and the timestamp are kept."
@@ -249,14 +274,21 @@ export default function ReviewQueuePage({ reviewRepository }) {
         open={Boolean(pendingDecision)}
         title={
           pendingDecision?.approve
-            ? "Approve this application?"
-            : "Reject this application?"
+            ? `Approve ${pendingName}?`
+            : `Reject ${pendingName}?`
         }
       >
         <div className="form-field">
           <label className="form-field__label" htmlFor="review-notes">
-            Notes for the record (optional)
+            {pendingDecision?.approve
+              ? "Notes for the record (optional)"
+              : "Notes for the applicant (optional)"}
           </label>
+          {pendingDecision?.approve ? null : (
+            <p className="form-field__hint">
+              They will see this with &ldquo;Apply again&rdquo;.
+            </p>
+          )}
           <textarea
             className="form-field__input"
             id="review-notes"
@@ -267,6 +299,6 @@ export default function ReviewQueuePage({ reviewRepository }) {
           />
         </div>
       </Modal>
-    </Section>
+    </div>
   );
 }

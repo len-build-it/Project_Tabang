@@ -4,6 +4,7 @@ import AppHeader from "../components/navigation/AppHeader.jsx";
 import LoadingState from "../components/feedback/LoadingState.jsx";
 import SkipLink from "../components/navigation/SkipLink.jsx";
 import BottomNav from "../components/navigation/BottomNav.jsx";
+import Icon from "../components/ui/Icon.jsx";
 import { useAuth } from "../app/providers/useAuth.js";
 import { usePageChrome } from "../components/navigation/usePageTitle.js";
 import { PageHeading } from "../components/ui/Primitives.jsx";
@@ -23,7 +24,7 @@ const reviewerItem = {
 };
 
 export default function ResponderLayout() {
-  const { heading } = usePageChrome();
+  const { heading, backTo } = usePageChrome();
   const location = useLocation();
   const { isReviewer } = useAuth();
 
@@ -40,14 +41,15 @@ export default function ResponderLayout() {
   return (
     <div className="shell shell--responder">
       <SkipLink />
-      <AppHeader workspaceLabel="Responder" />
+      <AppHeader backTo={backTo} workspaceLabel="Responder" />
       <main className="shell__content shell__content--with-nav" id="main">
         <PageHeading key={location.pathname}>{heading}</PageHeading>
         {/* Responders are residents too: they may need to report their own
             flooding or ask for help. */}
         <nav aria-label="Other workspaces" className="workspace-switch">
-          <Link to="/app">
-            Resident features: report, request help, my reports
+          <Link className="workspace-switch__link" to="/app">
+            <Icon name="swap" />
+            Resident workspace: report, request help, my reports
           </Link>
         </nav>
         <Suspense

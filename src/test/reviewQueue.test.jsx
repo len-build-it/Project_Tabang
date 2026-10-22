@@ -101,7 +101,9 @@ describe("review queue route", () => {
       decide: vi.fn(),
     });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Approve" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Approve Maria Santos" }),
+    );
 
     expect(
       screen.getByText(/grants responder access immediately and deletes/),
@@ -116,11 +118,13 @@ describe("review queue route", () => {
       decide,
     });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Approve" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Approve Maria Santos" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Go back" }));
     expect(decide).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    fireEvent.click(screen.getByRole("button", { name: "Approve Maria Santos" }));
     fireEvent.change(screen.getByLabelText("Notes for the record (optional)"), {
       target: { value: "Badge confirmed by phone." },
     });
@@ -146,7 +150,9 @@ describe("review queue route", () => {
       decide: vi.fn().mockRejectedValue(new Error("offline")),
     });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Reject Maria Santos" }),
+    );
     fireEvent.click(
       screen.getByRole("button", { name: "Reject the application" }),
     );

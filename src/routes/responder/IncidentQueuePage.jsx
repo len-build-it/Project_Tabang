@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import EmptyState from "../../components/feedback/EmptyState.jsx";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
 import { FormStatus } from "../../components/forms/FormField.jsx";
 import IncidentCard from "../../components/incidents/IncidentCard.jsx";
-import { Section, Skeleton } from "../../components/ui/Primitives.jsx";
+import Icon from "../../components/ui/Icon.jsx";
+import { Skeleton } from "../../components/ui/Primitives.jsx";
 import { describeActionError } from "../../services/errors/describeActionError.js";
 import { createIncidentRepository } from "../../services/incidents/incidentRepository.js";
 
@@ -22,6 +24,30 @@ const KIND_FILTERS = [
   { value: "help", label: "Help" },
 ];
 
+function FilterSelect({ id, label, value, options, onChange }) {
+  return (
+    <div className="filter-pill">
+      <label htmlFor={id}>{label}</label>
+      <select
+        id={id}
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <Icon className="filter-pill__chevron" name="chevD" />
+    </div>
+  );
+}
+
+function labelFor(options, value) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 export default function IncidentQueuePage({ incidentRepository }) {
   const repository = useMemo(
     () => incidentRepository ?? createIncidentRepository(),
@@ -33,7 +59,15 @@ export default function IncidentQueuePage({ incidentRepository }) {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadState, setLoadState] = useState("loading");
-  const [status, setStatus] = useState("open");
+  // The dashboard links here with ?status=new to open the unclaimed view.
+  const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState(() => {
+    const requested = searchParams.get("status");
+
+    return STATUS_FILTERS.some((option) => option.value === requested)
+      ? requested
+      : "open";
+  });
   const [kind, setKind] = useState("all");
   const [claimingId, setClaimingId] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -115,60 +149,51 @@ export default function IncidentQueuePage({ incidentRepository }) {
     (incident) => incident.isOverdue,
   ).length;
 
+  const filtered = status !== "open" || kind !== "all";
+
   return (
-    <Section
-      id="incident-queue"
-      title="Open incidents"
-      description="Oldest first, so the longest wait is handled first. Nothing escalates on its own; this queue has to be watched."
-      action={
+    <div className="page-stack">
+      <div className="home-section__header">
+        <p className="page-intro">
+          Oldest first, so the longest wait is handled first. Nothing escalates
+          on its own; this queue has to be watched.
+        </p>
         <button
-          className="action-button action-button--secondary"
+          className="action-button action-button--secondary action-button--compact"
           onClick={refresh}
           type="button"
         >
+          <Icon name="refresh" />
           Refresh
         </button>
-      }
-    >
+      </div>
+
       <FormStatus message={actionError} />
 
-      <div className="filter-row">
-        <div className="form-field">
-          <label className="form-field__label" htmlFor="status-filter">
-            Status
-          </label>
-          <select
-            className="form-field__input"
-            id="status-filter"
-            onChange={(event) => setStatus(event.target.value)}
-            value={status}
-          >
-            {STATUS_FILTERS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-field">
-          <label className="form-field__label" htmlFor="kind-filter">
-            Kind
-          </label>
-          <select
-            className="form-field__input"
-            id="kind-filter"
-            onChange={(event) => setKind(event.target.value)}
-            value={kind}
-          >
-            {KIND_FILTERS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div aria-label="Filters" className="filter-bar" role="group">
+        <FilterSelect
+          id="status-filter"
+          label="Status"
+          onChange={setStatus}
+          options={STATUS_FILTERS}
+          value={status}
+        />
+        <FilterSelect
+          id="kind-filter"
+          label="Kind"
+          onChange={setKind}
+          options={KIND_FILTERS}
+          value={kind}
+        />
       </div>
+
+      {loadState === "ready" ? (
+        <p className="report-group__note" role="status">
+          {incidents.length}
+          {hasMore ? "+" : ""} shown · {labelFor(STATUS_FILTERS, status)} ·{" "}
+          {labelFor(KIND_FILTERS, kind)} · oldest first
+        </p>
+      ) : null}
 
       {overdueCount > 0 && loadState === "ready" ? (
         <p className="stale-notice" role="status">
@@ -193,14 +218,31 @@ export default function IncidentQueuePage({ incidentRepository }) {
 
       {loadState === "ready" && incidents.length === 0 ? (
         <EmptyState
+          icon="checkCircle"
           title="Nothing in this view"
-          message="No incidents match the current filters."
-        />
+          message={`No incidents match the current filters: Status ${labelFor(
+            STATUS_FILTERS,
+            status,
+          )}, ${labelFor(KIND_FILTERS, kind)}.`}
+        >
+          {filtered ? (
+            <button
+              className="action-button action-button--secondary action-button--compact"
+              onClick={() => {
+                setStatus("open");
+                setKind("all");
+              }}
+              type="button"
+            >
+              Clear filters
+            </button>
+          ) : null}
+        </EmptyState>
       ) : null}
 
       {loadState === "ready" && incidents.length > 0 ? (
         <>
-          <ul className="report-list">
+          <ul className="report-list report-list--wide">
             {incidents.map((incident) => (
               <IncidentCard
                 claiming={claimingId === incident.id}
@@ -212,19 +254,17 @@ export default function IncidentQueuePage({ incidentRepository }) {
           </ul>
 
           {hasMore ? (
-            <div className="button-row">
-              <button
-                className="action-button action-button--secondary"
-                disabled={loadingMore}
-                onClick={loadMore}
-                type="button"
-              >
-                {loadingMore ? "Loading…" : "Load more incidents"}
-              </button>
-            </div>
+            <button
+              className="action-button action-button--secondary action-button--block"
+              disabled={loadingMore}
+              onClick={loadMore}
+              type="button"
+            >
+              {loadingMore ? "Loading…" : "Load more incidents"}
+            </button>
           ) : null}
         </>
       ) : null}
-    </Section>
+    </div>
   );
 }

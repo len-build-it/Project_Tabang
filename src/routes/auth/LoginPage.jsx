@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   return (
     <section className="auth-panel">
-      <p>Use the email address you registered with.</p>
+      <p className="page-intro">Use the email address you registered with.</p>
 
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
         <FormStatus message={formError} />
@@ -85,7 +85,7 @@ export default function LoginPage() {
           autoComplete="email"
           error={errors.email}
           inputMode="email"
-          label="Email address"
+          label="Email"
           name="email"
           onChange={setField("email")}
           type="email"
@@ -101,22 +101,25 @@ export default function LoginPage() {
           value={form.password}
         />
 
-        <button className="action-button" disabled={submitting} type="submit">
+        <Link className="text-link text-link--start" to="/reset-password">
+          Forgot password?
+        </Link>
+
+        <button
+          className="action-button action-button--block"
+          disabled={submitting}
+          type="submit"
+        >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
 
-      <ul className="link-list">
-        <li>
-          <Link to="/reset-password">Forgot your password?</Link>
-        </li>
-        <li>
-          <Link to="/signup">Create a resident account</Link>
-        </li>
-        <li>
-          <Link to="/privacy">Read the privacy policy</Link>
-        </li>
-      </ul>
+      <p className="auth-panel__switch">
+        New to Tabang? <Link to="/signup">Create an account</Link>
+      </p>
+      <Link className="text-link text-link--quiet" to="/privacy">
+        Privacy policy and terms
+      </Link>
     </section>
   );
 }

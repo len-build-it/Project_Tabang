@@ -89,7 +89,7 @@ export function PasswordField({
           {error}
         </p>
       ) : null}
-      <div className="form-field__control">
+      <div className="form-field__control password-control">
         <input
           aria-describedby={describedBy}
           aria-invalid={error ? "true" : undefined}
@@ -108,6 +108,7 @@ export function PasswordField({
           onClick={() => setRevealed((current) => !current)}
           type="button"
         >
+          <Icon name={revealed ? "eyeOff" : "eye"} />
           {revealed ? "Hide" : "Show"}
         </button>
       </div>
@@ -119,6 +120,13 @@ export function PasswordField({
  * A permanently mounted live region. Screen readers only announce reliably
  * when the region exists before its content changes, so this always renders.
  */
+const STATUS_ICONS = {
+  error: "alert",
+  success: "checkCircle",
+  // Something is still in progress, not broken: a clock, not a warning sign.
+  warning: "clock",
+};
+
 export function FormStatus({ message, tone = "error" }) {
   return (
     <p
@@ -128,7 +136,8 @@ export function FormStatus({ message, tone = "error" }) {
       }
       role={tone === "error" ? "alert" : "status"}
     >
-      {message ?? ""}
+      {message ? <Icon name={STATUS_ICONS[tone] ?? "info"} /> : null}
+      {message ? <span>{message}</span> : ""}
     </p>
   );
 }

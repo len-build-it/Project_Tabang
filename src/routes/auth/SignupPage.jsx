@@ -93,10 +93,9 @@ export default function SignupPage() {
 
   return (
     <section className="auth-panel">
-      <span className="section-tag">Resident registration</span>
-      <p>
-        Residents can report flooding and request help. Responder access is
-        reviewed separately after you sign in.
+      <p className="page-intro">
+        You need an account to report flooding and ask for help. Responder
+        access is reviewed separately after you sign in.
       </p>
 
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
@@ -115,7 +114,7 @@ export default function SignupPage() {
           autoComplete="email"
           error={errors.email}
           inputMode="email"
-          label="Email address"
+          label="Email"
           name="email"
           onChange={setField("email")}
           type="email"
@@ -125,9 +124,9 @@ export default function SignupPage() {
         <FormField
           autoComplete="tel"
           error={errors.phone}
-          hint="Used only so responders can reach you about your own reports."
+          hint="Example: 0917 000 0000. Used only so responders can reach you about your own reports."
           inputMode="tel"
-          label="Mobile number"
+          label="Phone number"
           name="phone"
           onChange={setField("phone")}
           type="tel"
@@ -137,6 +136,7 @@ export default function SignupPage() {
         <FormField
           autoComplete="address-level3"
           error={errors.barangay}
+          hint="Where you live"
           label="Barangay"
           name="barangay"
           onChange={setField("barangay")}
@@ -162,19 +162,23 @@ export default function SignupPage() {
           value={form.confirmPassword}
         />
 
-        <button className="action-button" disabled={submitting} type="submit">
+        <p className="form-field__hint">
+          By creating an account you agree to the{" "}
+          <Link to="/privacy">privacy policy and terms</Link>.
+        </p>
+
+        <button
+          className="action-button action-button--block"
+          disabled={submitting}
+          type="submit"
+        >
           {submitting ? "Creating account…" : "Create account"}
         </button>
       </form>
 
-      <ul className="link-list">
-        <li>
-          <Link to="/login">Already registered? Sign in</Link>
-        </li>
-        <li>
-          <Link to="/privacy">How your data is handled</Link>
-        </li>
-      </ul>
+      <p className="auth-panel__switch">
+        Already have one? <Link to="/login">Sign in</Link>
+      </p>
     </section>
   );
 }

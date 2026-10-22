@@ -1,27 +1,70 @@
 import { Link } from "react-router-dom";
+import Icon from "../ui/Icon.jsx";
 import { Badge } from "../ui/Primitives.jsx";
-import { STATUS_LABEL, STATUS_TONE } from "./statusLabels.js";
+import {
+  INCIDENT_BADGE,
+  VERIFICATION_BADGE,
+  describeReportDetail,
+  kindBadge,
+} from "../reports/reportBadges.js";
+import { STATUS_LABEL } from "./statusLabels.js";
 
 export default function IncidentCard({ incident, onClaim, claiming }) {
+  const kind = kindBadge(incident.kind);
+  const status = INCIDENT_BADGE[incident.incidentStatus];
+  const verification = VERIFICATION_BADGE[incident.verificationStatus];
+  const detail = describeReportDetail(incident);
+
   return (
-    <li className="report-card">
-      <div className="report-card__meta">
-        <Badge tone={incident.kind === "flood" ? "warning" : "info"}>
-          {incident.kind === "flood" ? "Flood" : "Help"}
+    // The coloured edge groups kinds at a glance; the badge says it in words.
+    <li className={`report-card incident-card incident-card--${incident.kind}`}>
+      <div className="report-card__top">
+        <Badge icon={kind.icon} srPrefix="Kind: " tone={kind.tone}>
+          {kind.label}
         </Badge>
-        <Badge tone={STATUS_TONE[incident.incidentStatus] ?? "neutral"}>
-          {STATUS_LABEL[incident.incidentStatus] ?? incident.incidentStatus}
-        </Badge>
-        {incident.isOverdue ? <Badge tone="danger">Overdue</Badge> : null}
         {incident.waitingFor ? (
-          <span>Waiting {incident.waitingFor}</span>
+          <span className="incident-card__age">
+            <Icon name="clock" />
+            <span className="visually-hidden">Waiting </span>
+            {incident.waitingFor}
+          </span>
         ) : null}
       </div>
 
-      <h3 className="report-card__title">{incident.publicLocationLabel}</h3>
+      <div>
+        <h3 className="report-card__title">{incident.publicLocationLabel}</h3>
+        {detail ? <p className="report-card__detail">{detail}</p> : null}
+      </div>
+
       <p className="report-card__body">{incident.description}</p>
 
-      <div className="button-row">
+      <div className="report-card__meta">
+        <Badge
+          icon={status?.icon ?? "info"}
+          srPrefix="Status: "
+          tone={status?.tone ?? "neutral"}
+        >
+          {STATUS_LABEL[incident.incidentStatus] ?? incident.incidentStatus}
+        </Badge>
+        <Badge
+          icon={verification?.icon ?? "help"}
+          srPrefix="Verification: "
+          tone={verification?.tone ?? "neutral"}
+        >
+          {verification?.label ?? incident.verificationStatus}
+        </Badge>
+        {incident.isOverdue ? (
+          <Badge icon="alert" tone="danger">
+            Overdue
+          </Badge>
+        ) : null}
+      </div>
+
+      <p className="report-card__detail">
+        {incident.isClaimed ? "Claimed" : "Not claimed"}
+      </p>
+
+      <div className="report-card__actions">
         <Link
           className="action-button action-button--secondary"
           to={`/responder/incidents/${incident.id}`}

@@ -2,7 +2,8 @@
  * Line icons from the Tabang v2 design (tb-icons.js in the Claude Design
  * project), drawn inline so no icon package or extra request is needed.
  * Each entry is a list of shapes: a string is a path, ["c", cx, cy, r] a
- * circle, ["cd", ...] a dashed circle, ["r", x, y, w, h, rx] a rectangle.
+ * circle, ["cd", ...] a dashed circle, ["f", d] a filled path, and
+ * ["r", x, y, w, h, rx] a rectangle.
  */
 const PATHS = {
   home: ["m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z", "M9 22V12h6v10"],
@@ -122,6 +123,36 @@ const PATHS = {
     "M10 18h4",
   ],
   aid: [["r", 3, 3, 18, 18, 2], "M12 8v8", "M8 12h8"],
+  chevU: ["m18 15-6-6-6 6"],
+  eyeOff: [
+    "M10.73 5.08a10.74 10.74 0 0 1 11.2 6.57 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-1.44 2.49",
+    "M14.08 14.16a3 3 0 0 1-4.24-4.24",
+    "M17.48 17.5a10.75 10.75 0 0 1-15.42-5.15 1 1 0 0 1 0-.7 10.75 10.75 0 0 1 4.45-5.14",
+    "m2 2 20 20",
+  ],
+  star: [
+    "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  ],
+  starF: [
+    [
+      "f",
+      "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+    ],
+  ],
+  users: [
+    "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2",
+    ["c", 9, 7, 4],
+    "M22 21v-2a4 4 0 0 0-3-3.87",
+    "M16 3.13a4 4 0 0 1 0 7.75",
+  ],
+  refresh: ["M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8", "M21 3v5h-5"],
+  ext: [
+    "M15 3h6v6",
+    "M10 14 21 3",
+    "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6",
+  ],
+  mail: [["r", 2, 4, 20, 16, 2], "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"],
+  swap: ["M8 3 4 7l4 4", "M4 7h16", "m16 21 4-4-4-4", "M20 17H4"],
 };
 
 function Shape({ shape }) {
@@ -135,6 +166,10 @@ function Shape({ shape }) {
     const [cx, cy, r] = values;
 
     return <circle cx={cx} cy={cy} r={r} />;
+  }
+
+  if (type === "f") {
+    return <path d={values[0]} fill="currentColor" />;
   }
 
   if (type === "cd") {

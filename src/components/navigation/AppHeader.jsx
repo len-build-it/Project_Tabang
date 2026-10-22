@@ -24,7 +24,12 @@ function BackButton({ to }) {
   );
 }
 
-export default function AppHeader({ menu, backTo, workspaceLabel }) {
+export default function AppHeader({
+  menu,
+  backTo,
+  workspaceLabel,
+  showSignIn = false,
+}) {
   return (
     <header className="app-header">
       <div className="app-header__inner">
@@ -39,6 +44,11 @@ export default function AppHeader({ menu, backTo, workspaceLabel }) {
           <span className="app-header__workspace">{workspaceLabel}</span>
         ) : null}
         <span className="app-header__spacer" />
+        {showSignIn ? (
+          <Link className="app-header__sign-in" to="/login">
+            Sign in
+          </Link>
+        ) : null}
         {menu ? (
           <button
             aria-controls={menu.controls}

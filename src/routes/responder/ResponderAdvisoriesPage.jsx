@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../app/providers/useAuth.js";
 import EmptyState from "../../components/feedback/EmptyState.jsx";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
+import Modal from "../../components/feedback/Modal.jsx";
 import { FormField, FormStatus } from "../../components/forms/FormField.jsx";
-import { Badge, Section, Skeleton } from "../../components/ui/Primitives.jsx";
+import { kindBadge } from "../../components/reports/reportBadges.js";
+import Icon from "../../components/ui/Icon.jsx";
+import { Badge, Skeleton } from "../../components/ui/Primitives.jsx";
 import { createAdvisoryRepository } from "../../services/advisories/advisoryRepository.js";
 import { collapseWhitespace } from "../../services/auth/profile.js";
 import { describeActionError } from "../../services/errors/describeActionError.js";
@@ -39,6 +42,7 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState(null);
   const [working, setWorking] = useState(false);
+  const [pendingUnpublish, setPendingUnpublish] = useState(null);
   const activeRef = useRef(0);
 
   const load = useCallback(
@@ -119,6 +123,7 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
   }
 
   async function unpublish(id) {
+    setPendingUnpublish(null);
     setWorking(true);
     setStatus(null);
 
@@ -139,23 +144,43 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
   const setField = (field) => (value) =>
     setForm((current) => ({ ...current, [field]: value }));
 
+  const summaryLength = collapseWhitespace(form.summary).length;
+  const live = advisories.filter((advisory) => advisory.published).length;
+
   return (
-    <>
-      <Section
-        id="publish-advisory"
-        title="Publish an advisory"
-        description="Advisories are public: anyone opening Tabang can read them. Never include names, phone numbers, or house addresses."
-      >
+    <div className="page-stack">
+      <section aria-labelledby="publish-heading" className="action-panel">
+        <h2 className="section-title" id="publish-heading">
+          Publish an advisory
+        </h2>
+        <p className="form-field__hint">
+          Advisories are public: anyone opening Tabang can read them. Never
+          include names, phone numbers, or house addresses.
+        </p>
+
         <form className="auth-form" noValidate onSubmit={publish}>
           <FormStatus message={status?.message} tone={status?.tone} />
 
-          <div className="form-field">
+          <div
+            className={errors.summary ? "form-field has-error" : "form-field"}
+          >
             <label className="form-field__label" htmlFor="advisory-summary">
               Advisory
             </label>
+            <p className="form-field__hint" id="advisory-summary-hint">
+              What people should know and do, in one or two sentences.
+            </p>
+            {errors.summary ? (
+              <p className="form-field__error" id="advisory-summary-error">
+                <Icon name="alert" />
+                {errors.summary}
+              </p>
+            ) : null}
             <textarea
               aria-describedby={
-                errors.summary ? "advisory-summary-error" : undefined
+                errors.summary
+                  ? "advisory-summary-hint advisory-summary-error"
+                  : "advisory-summary-hint"
               }
               aria-invalid={errors.summary ? "true" : undefined}
               className="form-field__input"
@@ -165,11 +190,13 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
               rows={3}
               value={form.summary}
             />
-            {errors.summary ? (
-              <p className="form-field__error" id="advisory-summary-error">
-                {errors.summary}
-              </p>
-            ) : null}
+            {/* Announced only near the limit, so it does not chatter. */}
+            <p
+              aria-live={summaryLength > MAX_SUMMARY * 0.8 ? "polite" : "off"}
+              className="form-field__hint field-counter"
+            >
+              {summaryLength} / {MAX_SUMMARY}
+            </p>
           </div>
 
           <div className="form-field">
@@ -179,19 +206,24 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
             >
               Municipality (optional)
             </label>
-            <select
-              className="form-field__input"
-              id="advisory-municipality"
-              onChange={(event) => setField("municipality")(event.target.value)}
-              value={form.municipality}
-            >
-              <option value="">All of Aklan</option>
-              {AKLAN_MUNICIPALITIES.map((municipality) => (
-                <option key={municipality} value={municipality}>
-                  {municipality}
-                </option>
-              ))}
-            </select>
+            <div className="select-control">
+              <select
+                className="form-field__input"
+                id="advisory-municipality"
+                onChange={(event) =>
+                  setField("municipality")(event.target.value)
+                }
+                value={form.municipality}
+              >
+                <option value="">All of Aklan</option>
+                {AKLAN_MUNICIPALITIES.map((municipality) => (
+                  <option key={municipality} value={municipality}>
+                    {municipality}
+                  </option>
+                ))}
+              </select>
+              <Icon className="select-control__chevron" name="chevD" />
+            </div>
           </div>
 
           <FormField
@@ -202,13 +234,23 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
             value={form.barangay}
           />
 
-          <button className="action-button" disabled={working} type="submit">
+          <button
+            className="action-button action-button--block"
+            disabled={working}
+            type="submit"
+          >
+            <Icon name="megaphone" />
             {working ? "Saving…" : "Publish advisory"}
           </button>
         </form>
-      </Section>
+      </section>
 
-      <Section id="my-advisories" title="Your advisories">
+      <section aria-labelledby="my-advisories-heading" className="report-group">
+        <h2 className="report-group__title" id="my-advisories-heading">
+          Your advisories
+          {loadState === "ready" ? ` · ${live} live` : ""}
+        </h2>
+
         {loadState === "loading" ? (
           <Skeleton label="Loading your advisories" lines={3} />
         ) : null}
@@ -231,32 +273,58 @@ export default function ResponderAdvisoriesPage({ advisoryRepository }) {
 
         {loadState === "ready" && advisories.length > 0 ? (
           <ul className="report-list">
-            {advisories.map((advisory) => (
-              <li className="report-card" key={advisory.id}>
-                <div className="report-card__meta">
-                  <Badge tone={advisory.published ? "success" : "neutral"}>
-                    {advisory.published ? "Published" : "Unpublished"}
-                  </Badge>
-                  <span>{formatWhen(advisory.createdAtMillis)}</span>
-                </div>
-                <p className="report-card__body">{advisory.summary}</p>
-                {advisory.published ? (
-                  <div className="button-row">
+            {advisories.map((advisory) => {
+              const kind = kindBadge(advisory.kind);
+              const place =
+                [advisory.barangay, advisory.municipality]
+                  .filter(Boolean)
+                  .join(", ") || "All of Aklan";
+
+              return (
+                <li className="report-card" key={advisory.id}>
+                  <div className="report-card__meta">
+                    <Badge
+                      icon={advisory.published ? "checkCircle" : "xCircle"}
+                      tone={advisory.published ? "success" : "neutral"}
+                    >
+                      {advisory.published ? "Published" : "Unpublished"}
+                    </Badge>
+                    <Badge icon={kind.icon} srPrefix="Kind: " tone={kind.tone}>
+                      {kind.label}
+                    </Badge>
+                    <span className="advisory-item__place">{place}</span>
+                  </div>
+                  <p className="report-card__body">{advisory.summary}</p>
+                  <p className="report-card__time">
+                    {formatWhen(advisory.createdAtMillis)}
+                  </p>
+                  {advisory.published ? (
                     <button
-                      className="action-button action-button--secondary"
+                      className="action-button action-button--danger-outline action-button--compact"
                       disabled={working}
-                      onClick={() => unpublish(advisory.id)}
+                      onClick={() => setPendingUnpublish(advisory)}
                       type="button"
                     >
                       Unpublish
                     </button>
-                  </div>
-                ) : null}
-              </li>
-            ))}
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         ) : null}
-      </Section>
-    </>
+      </section>
+
+      <Modal
+        confirmLabel="Yes, unpublish"
+        confirmTone="danger"
+        description="Residents will no longer see this advisory. It stays in your list as unpublished."
+        dismissLabel="Keep it published"
+        onClose={() => setPendingUnpublish(null)}
+        onConfirm={() => unpublish(pendingUnpublish.id)}
+        open={Boolean(pendingUnpublish)}
+        title="Unpublish this advisory?"
+      />
+    </div>
   );
 }

@@ -81,7 +81,7 @@ describe("responder dashboard route", () => {
     await screen.findByText("Open incidents");
     expect(screen.getByText("30")).toBeInTheDocument();
     expect(screen.getByText("19")).toBeInTheDocument();
-    expect(screen.getByText("Counted at")).toBeInTheDocument();
+    expect(screen.getByText(/^Counted at /)).toBeInTheDocument();
     expect(screen.getByText(/Counted from every open incident/)).toBeInTheDocument();
     expect(countIncidents).toHaveBeenCalledTimes(1);
   });

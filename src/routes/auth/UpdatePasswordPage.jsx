@@ -57,8 +57,7 @@ export default function UpdatePasswordPage() {
 
   return (
     <section className="auth-panel">
-      <span className="section-tag">Account recovery</span>
-      <p>Choose a new password for your account.</p>
+      <p className="page-intro">Choose a new password for your account.</p>
 
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
         <FormStatus message={status?.message} tone={status?.tone} />
@@ -82,16 +81,18 @@ export default function UpdatePasswordPage() {
           value={form.confirmPassword}
         />
 
-        <button className="action-button" disabled={submitting} type="submit">
+        <button
+          className="action-button action-button--block"
+          disabled={submitting}
+          type="submit"
+        >
           {submitting ? "Saving…" : "Save new password"}
         </button>
       </form>
 
-      <ul className="link-list">
-        <li>
-          <Link to={homeRouteForRole(role)}>Continue to Tabang</Link>
-        </li>
-      </ul>
+      <p className="auth-panel__switch">
+        <Link to={homeRouteForRole(role)}>Continue to Tabang</Link>
+      </p>
     </section>
   );
 }

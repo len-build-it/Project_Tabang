@@ -151,7 +151,8 @@ describe("hotline directory route", () => {
     expect(
       screen.queryByLabelText("Did this number help?"),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Call 911 now" })).toHaveAttribute(
+    // 911 stays pinned above a loaded list.
+    expect(screen.getByRole("link", { name: "Emergency 911" })).toHaveAttribute(
       "href",
       "tel:911",
     );
@@ -252,7 +253,7 @@ describe("hotline directory route", () => {
 
     const heading = await screen.findByRole("heading", {
       level: 1,
-      name: "Emergency hotlines",
+      name: "Hotlines",
     });
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);

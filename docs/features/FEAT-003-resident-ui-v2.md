@@ -1,11 +1,11 @@
 # FEAT-003: Resident screens in the v2 "tactile" design
 
 Created: 2026-10-22T08:30:00+08:00
-Updated: 2026-10-22T12:01:24+08:00
+Updated: 2026-10-22T20:30:00+08:00
 Revision: 1
 Status: Approved
 Len's chat instruction: On 2026-10-22 Len asked in chat to update the web app's UI and to "Implement: `Tabang Resident v2.dc.html`" from the Claude Design project, then said "continue where you left off" after authorizing design access.
-Len's chat approval: Approved by Len in chat on 2026-10-22 at about 12:01 +08:00, after reviewing the implementation summary and commit `269de50`: "alright i approve you can push the branch, we'll work on the public and responder v2 screens next"
+Len's chat approval: Approved by Len in chat on 2026-10-22 at about 20:01 +08:00, after reviewing the implementation summary and commit `269de50`: "alright i approve you can push the branch, we'll work on the public and responder v2 screens next"
 Architecture: [../product/ARCHITECTURE.md](../product/ARCHITECTURE.md) Revision 3, unchanged
 Design source: Claude Design project `37ff3689-6501-4e24-8db2-b36dc0416ecb`, files `Tabang Resident v2.dc.html`, `TbHeader2.dc.html`, `TbNav2.dc.html`, `TbBadge2.dc.html`, and `tb-icons.js`
 

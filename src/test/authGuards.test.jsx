@@ -58,7 +58,7 @@ describe("route guards", () => {
     renderRoute("/login", null, gateway);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Sign in to Tabang" }),
+      screen.getByRole("heading", { level: 1, name: "Sign in" }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getAllByRole("main")).toHaveLength(1);
@@ -91,7 +91,7 @@ describe("route guards", () => {
     // error state here because no Firestore is configured in unit tests, and
     // reaching the route at all is what this guard test is about.
     expect(
-      await screen.findByRole("heading", { name: "Incident queue" }),
+      await screen.findByRole("heading", { name: "Incidents" }),
     ).toBeInTheDocument();
   });
 

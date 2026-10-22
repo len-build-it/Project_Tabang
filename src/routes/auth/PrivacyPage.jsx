@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Icon from "../../components/ui/Icon.jsx";
 
 // Draft for Len's review (plan phase 5). It describes what this build does;
 // it is not legal advice and has not been reviewed by a lawyer or a Data
@@ -75,41 +76,71 @@ const SECTIONS = [
   },
 ];
 
+function sectionId(heading) {
+  return `section-${heading.split(".")[0]}`;
+}
+
 export default function PrivacyPage() {
   return (
-    <section className="surface-card surface-card--wide">
-      <span className="section-tag">Legal</span>
-      <p>Last updated: October 2026</p>
+    <article className="policy" id="policy-top">
+      <p className="page-intro">Last updated: October 2026</p>
       <p>
         Tabang is committed to protecting your privacy while providing a
         reliable disaster response platform.
       </p>
 
+      <nav aria-labelledby="policy-contents" className="policy__contents">
+        <h2 id="policy-contents">On this page</h2>
+        <ol>
+          {SECTIONS.map((section) => (
+            <li key={section.heading}>
+              <a href={`#${sectionId(section.heading)}`}>
+                {section.heading.replace(/^\d+\.\s*/, "")}
+              </a>
+            </li>
+          ))}
+          <li>
+            <a href="#section-contact">Contact us</a>
+          </li>
+        </ol>
+      </nav>
+
       {SECTIONS.map((section) => (
-        <div key={section.heading}>
-          <h2>{section.heading}</h2>
+        <section
+          aria-labelledby={sectionId(section.heading)}
+          key={section.heading}
+        >
+          <h2 id={sectionId(section.heading)}>{section.heading}</h2>
           {section.intro ? <p>{section.intro}</p> : null}
-          <ul className="checklist">
+          <ul>
             {section.items.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-        </div>
+        </section>
       ))}
 
-      <h2>Contact us</h2>
-      <p>
-        Email:{" "}
-        <a href="mailto:tabangdreamteam@gmail.com">tabangdreamteam@gmail.com</a>
-        <br />
-        Location: Aklan, Philippines
-      </p>
+      <section aria-labelledby="section-contact">
+        <h2 id="section-contact">Contact us</h2>
+        <p>
+          Email:{" "}
+          <a href="mailto:tabangdreamteam@gmail.com">
+            tabangdreamteam@gmail.com
+          </a>
+          <br />
+          Location: Aklan, Philippines
+        </p>
+      </section>
 
-      <div className="button-row">
-        <Link className="action-button" to="/">
+      <div className="policy__footer">
+        <a className="text-link text-link--start" href="#policy-top">
+          <Icon name="chevU" />
+          Back to top
+        </a>
+        <Link className="action-button action-button--secondary" to="/">
           Back to home
         </Link>
       </div>
-    </section>
+    </article>
   );
 }

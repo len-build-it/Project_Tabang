@@ -4,7 +4,8 @@ import EmptyState from "../../components/feedback/EmptyState.jsx";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
 import EmergencyCallCard from "../../components/feedback/EmergencyCallCard.jsx";
 import { FormStatus } from "../../components/forms/FormField.jsx";
-import { Badge, Section, Skeleton } from "../../components/ui/Primitives.jsx";
+import Icon from "../../components/ui/Icon.jsx";
+import { Badge, Skeleton } from "../../components/ui/Primitives.jsx";
 import {
   MAX_COMMENT_LENGTH,
   MAX_RATING,
@@ -35,34 +36,57 @@ function HotlineCard({ hotline, canReview, onReview, submitting }) {
   }
 
   return (
-    <li className="report-card">
-      <div className="report-card__meta">
-        {hotline.verified ? (
-          <Badge tone="success">Verified</Badge>
-        ) : (
-          <Badge tone="warning">Not yet verified</Badge>
-        )}
-        {hotline.verificationStale ? (
-          <Badge tone="warning">Verification is old</Badge>
+    <li className="report-card hotline-card">
+      <div>
+        <h2 className="report-card__title">{hotline.organization}</h2>
+        {hotline.coverageArea ? (
+          <p className="hotline-card__area">
+            <Icon name="pin" />
+            Covers {hotline.coverageArea}
+          </p>
         ) : null}
-        {hotline.averageRating !== null ? (
-          <span>
-            {hotline.averageRating} from {hotline.ratingCount}{" "}
-            {hotline.ratingCount === 1 ? "rating" : "ratings"}
-          </span>
-        ) : (
-          <span>No ratings yet</span>
-        )}
       </div>
 
-      <h3 className="report-card__title">{hotline.organization}</h3>
-      {hotline.coverageArea ? <p>Covers {hotline.coverageArea}</p> : null}
+      <div className="report-card__meta">
+        {hotline.verified ? (
+          <Badge icon="shield" srPrefix="Verification: " tone="success">
+            Verified {formatWhen(hotline.verifiedAtMillis)}
+          </Badge>
+        ) : (
+          <Badge icon="help" srPrefix="Verification: " tone="neutral">
+            Not yet verified
+          </Badge>
+        )}
+        {hotline.verificationStale ? (
+          <Badge icon="clock" tone="warning">
+            Verification is old
+          </Badge>
+        ) : null}
+        <span className="hotline-card__rating">
+          <Icon name="starF" />
+          {hotline.averageRating !== null
+            ? `${hotline.averageRating} from ${hotline.ratingCount} ${
+                hotline.ratingCount === 1 ? "rating" : "ratings"
+              }`
+            : "No ratings yet"}
+        </span>
+      </div>
 
-      <ul className="link-list">
+      <ul className="hotline-rows">
         {hotline.phoneNumbers.map((number) => (
           <li key={number}>
             {/* Anyone may call, signed in or not. */}
-            <a href={`tel:${encodeURIComponent(number)}`}>{number}</a>
+            <a
+              className="hotline-row"
+              href={`tel:${encodeURIComponent(number)}`}
+            >
+              <Icon name="phone" />
+              <span className="hotline-row__number">{number}</span>
+              {/* The link's name stays the number itself. */}
+              <span aria-hidden="true" className="hotline-row__name">
+                Tap to call
+              </span>
+            </a>
           </li>
         ))}
       </ul>
@@ -76,8 +100,12 @@ function HotlineCard({ hotline, canReview, onReview, submitting }) {
       </p>
 
       {canReview ? (
-        <details>
-          <summary>Rate this number</summary>
+        <details className="disclosure disclosure--inline">
+          <summary>
+            <Icon className="disclosure__icon" name="star" />
+            <span className="disclosure__title">Rate this number</span>
+            <Icon className="disclosure__chevron" name="chevD" />
+          </summary>
           <form className="auth-form" noValidate onSubmit={submit}>
             <div className="form-field">
               <label
@@ -220,60 +248,74 @@ export default function HotlineDirectoryPage({ hotlineRepository }) {
     }
   }
 
+  const unusable =
+    loadState === "error" || (loadState === "ready" && hotlines.length === 0);
+
   return (
-    <>
-      <EmergencyCallCard />
-      <Section
-        id="hotlines"
-        title="Available numbers"
-        description="The directory is public. Signed-in visitors can rate each number once."
-        action={
-          <button
-            className="action-button action-button--secondary"
-            onClick={refresh}
-            type="button"
-          >
-            Refresh
-          </button>
-        }
-      >
-        <FormStatus message={actionError} />
-        <FormStatus message={actionNotice} tone="success" />
+    <div className="page-stack">
+      <div className="home-section__header">
+        <p className="page-intro">
+          Tap a number to call. The directory is public; signed-in visitors can
+          rate each number once.
+        </p>
+        <button
+          className="action-button action-button--secondary action-button--compact"
+          onClick={refresh}
+          type="button"
+        >
+          <Icon name="refresh" />
+          Refresh
+        </button>
+      </div>
 
-        {loadState === "loading" ? (
-          <Skeleton label="Loading hotlines" lines={4} />
-        ) : null}
+      {/* 911 stays pinned above the list, whatever state the list is in. */}
+      {unusable ? null : (
+        <a className="call-row" href="tel:911">
+          <Icon name="phone" />
+          <span className="call-row__label">Emergency</span>{" "}
+          <span className="call-row__number">911</span>
+        </a>
+      )}
 
-        {loadState === "error" ? (
-          <ErrorState
-            title="The hotline directory could not be loaded"
-            message="The listed numbers are unavailable. You can still call 911 or contact your barangay hall."
-            actionLabel="Try again"
-            onAction={refresh}
-          />
-        ) : null}
+      <FormStatus message={actionError} />
+      <FormStatus message={actionNotice} tone="success" />
 
-        {loadState === "ready" && hotlines.length === 0 ? (
-          <EmptyState
-            title="No hotlines listed yet"
-            message="A reviewer adds hotline numbers centrally so residents and responders always see the same list. Contact your barangay hall in the meantime."
-          />
-        ) : null}
+      {loadState === "loading" ? (
+        <Skeleton label="Loading hotlines" lines={4} />
+      ) : null}
 
-        {loadState === "ready" && hotlines.length > 0 ? (
-          <ul className="report-list">
-            {hotlines.map((hotline) => (
-              <HotlineCard
-                canReview={status === "authenticated"}
-                hotline={hotline}
-                key={hotline.id}
-                onReview={review}
-                submitting={submittingId === hotline.id}
-              />
-            ))}
-          </ul>
-        ) : null}
-      </Section>
-    </>
+      {loadState === "error" ? (
+        <ErrorState
+          title="The hotline directory could not be loaded"
+          message="The listed numbers are unavailable. You can still call 911 or contact your barangay hall."
+          actionLabel="Try again"
+          onAction={refresh}
+        />
+      ) : null}
+
+      {loadState === "ready" && hotlines.length === 0 ? (
+        <EmptyState
+          title="No hotlines listed yet"
+          message="A reviewer adds hotline numbers centrally so residents and responders always see the same list. Contact your barangay hall in the meantime."
+        />
+      ) : null}
+
+      {/* An empty or failed list is never a dead end. */}
+      {unusable ? <EmergencyCallCard /> : null}
+
+      {loadState === "ready" && hotlines.length > 0 ? (
+        <ul className="report-list">
+          {hotlines.map((hotline) => (
+            <HotlineCard
+              canReview={status === "authenticated"}
+              hotline={hotline}
+              key={hotline.id}
+              onReview={review}
+              submitting={submittingId === hotline.id}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

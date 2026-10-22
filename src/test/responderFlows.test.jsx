@@ -80,6 +80,8 @@ describe("REQ-018: responder advisories", () => {
 
     renderWith(<ResponderAdvisoriesPage advisoryRepository={advisories} />);
     fireEvent.click(await screen.findByRole("button", { name: "Unpublish" }));
+    expect(advisories.unpublishAdvisory).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Yes, unpublish" }));
 
     await waitFor(() =>
       expect(advisories.unpublishAdvisory).toHaveBeenCalledWith("advisory-1"),
@@ -157,7 +159,9 @@ describe("REQ-026: reviewer evidence", () => {
       responderSession({ role: "reviewer" }),
     );
 
-    fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Reject Maria Santos" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Reject the application" }));
 
     expect(await screen.findByText(/evidence deletion is pending/)).toBeInTheDocument();
@@ -226,7 +230,7 @@ describe("REQ-025: moving between workspaces", () => {
     );
 
     expect(
-      await screen.findByRole("link", { name: /Resident features/ }),
+      await screen.findByRole("link", { name: /Resident workspace/ }),
     ).toHaveAttribute("href", "/app");
     expect(screen.getByRole("link", { name: "Advisories" })).toHaveAttribute(
       "href",

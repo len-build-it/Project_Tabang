@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import ErrorState from "../../components/feedback/ErrorState.jsx";
-import {
-  ActionLink,
-  Card,
-  Section,
-  Skeleton,
-} from "../../components/ui/Primitives.jsx";
+import Icon from "../../components/ui/Icon.jsx";
+import { ActionLink, Skeleton } from "../../components/ui/Primitives.jsx";
 import { createIncidentRepository } from "../../services/incidents/incidentRepository.js";
 import {
   METRIC_DEFINITIONS,
@@ -15,6 +12,11 @@ import {
 function formatWhen(millis) {
   return millis ? new Date(millis).toLocaleString() : "Never";
 }
+
+// Rows that match a queue filter open the queue already filtered.
+const QUEUE_FILTERS = {
+  unclaimed: "/responder/incidents?status=new",
+};
 
 export default function ResponderDashboardPage({ incidentRepository }) {
   const repository = useMemo(
@@ -70,21 +72,29 @@ export default function ResponderDashboardPage({ incidentRepository }) {
 
   const stale = metrics !== null && isMetricSetStale(metrics.generatedAtMillis);
 
+  const [headline, ...breakdown] = METRIC_DEFINITIONS;
+
   return (
-    <Section
-      id="metrics"
-      title="Operational summary"
-      description="Every figure here is counted from records this deployment holds. Nothing is estimated, projected, or sampled."
-      action={
+    <section aria-labelledby="metrics-heading" className="page-stack">
+      <h2 className="visually-hidden" id="metrics-heading">
+        Operational summary
+      </h2>
+      <div className="home-section__header">
+        <p className="page-intro">
+          {loadState === "ready" && metrics
+            ? `Counted at ${formatWhen(metrics.generatedAtMillis)}`
+            : "Counted from every open incident in this deployment."}
+        </p>
         <button
-          className="action-button action-button--secondary"
+          className="action-button action-button--secondary action-button--compact"
           onClick={refresh}
           type="button"
         >
+          <Icon name="refresh" />
           Refresh
         </button>
-      }
-    >
+      </div>
+
       {loadState === "loading" ? (
         <Skeleton label="Loading the summary" lines={4} />
       ) : null}
@@ -108,35 +118,59 @@ export default function ResponderDashboardPage({ incidentRepository }) {
             </p>
           ) : null}
 
-          <div className="card-grid">
-            {METRIC_DEFINITIONS.map((definition) => (
-              <Card key={definition.key}>
-                <p className="metric-value">{metrics.values[definition.key]}</p>
-                <h3>{definition.label}</h3>
-                <p>{definition.description}</p>
-                <p className="metric-source">{definition.source}</p>
-              </Card>
-            ))}
-          </div>
+          <Link className="metric-hero" to="/responder/incidents">
+            <span className="metric-hero__text">
+              <strong>{headline.label}</strong>
+              <span>{headline.description}</span>
+            </span>
+            <span className="metric-hero__value">
+              {metrics.values[headline.key]}
+            </span>
+            <Icon name="chevR" />
+          </Link>
 
-          <div className="detail-list">
-            <span>
-              <strong>Counted at</strong>
-              {formatWhen(metrics.generatedAtMillis)}
-            </span>
-            <span>
-              <strong>Coverage</strong>
-              Counted from every open incident in this deployment.
-            </span>
-          </div>
+          <section aria-labelledby="breakdown-heading" className="home-section">
+            <h2 id="breakdown-heading">Breakdown</h2>
+            <ul className="metric-list">
+              {breakdown.map((definition) => {
+                const content = (
+                  <>
+                    <span className="metric-row__text">
+                      <strong>{definition.label}</strong>
+                      <span>{definition.description}</span>
+                    </span>
+                    <span className="metric-row__value">
+                      {metrics.values[definition.key]}
+                    </span>
+                  </>
+                );
+
+                return (
+                  <li key={definition.key}>
+                    {QUEUE_FILTERS[definition.key] ? (
+                      <Link
+                        className="metric-row"
+                        to={QUEUE_FILTERS[definition.key]}
+                      >
+                        {content}
+                        <Icon name="chevR" />
+                      </Link>
+                    ) : (
+                      <div className="metric-row">{content}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="home-section__note">
+              Counted from every open incident in this deployment. Nothing is
+              estimated, projected, or sampled.
+            </p>
+          </section>
         </>
       ) : null}
 
-      <div className="button-row">
-        <ActionLink to="/responder/incidents">
-          Open the incident queue
-        </ActionLink>
-      </div>
-    </Section>
+      <ActionLink to="/responder/incidents">Open the incident queue</ActionLink>
+    </section>
   );
 }

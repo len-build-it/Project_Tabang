@@ -72,12 +72,19 @@ export const appRoutes = [
       {
         index: true,
         element: <LandingRoute />,
-        handle: { title: "Report flooding and request help in Aklan" },
+        handle: {
+          title: "Report flooding and request help in Aklan",
+          heading: "Call for help",
+        },
       },
       {
         path: "hotlines",
         element: <HotlineDirectoryPage />,
-        handle: { title: "Emergency hotlines" },
+        handle: {
+          title: "Emergency hotlines",
+          heading: "Hotlines",
+          backTo: "/",
+        },
       },
       {
         path: "login",
@@ -86,7 +93,7 @@ export const appRoutes = [
             <LoginPage />
           </RequireAnonymous>
         ),
-        handle: { title: "Sign in to Tabang" },
+        handle: { title: "Sign in to Tabang", heading: "Sign in", backTo: "/" },
       },
       {
         path: "signup",
@@ -95,7 +102,11 @@ export const appRoutes = [
             <SignupPage />
           </RequireAnonymous>
         ),
-        handle: { title: "Create a resident account" },
+        handle: {
+          title: "Create a resident account",
+          heading: "Create an account",
+          backTo: "/",
+        },
       },
       {
         path: "reset-password",
@@ -104,7 +115,7 @@ export const appRoutes = [
             <ResetPasswordPage />
           </RequireAnonymous>
         ),
-        handle: { title: "Reset your password" },
+        handle: { title: "Reset your password", backTo: "/login" },
       },
       {
         path: "update-password",
@@ -118,7 +129,7 @@ export const appRoutes = [
       {
         path: "privacy",
         element: <PrivacyPage />,
-        handle: { title: "Privacy policy and terms" },
+        handle: { title: "Privacy policy and terms", backTo: "/" },
       },
     ],
   },
@@ -161,7 +172,7 @@ export const appRoutes = [
       {
         path: "hotlines",
         element: <HotlineDirectoryPage />,
-        handle: { title: "Resident emergency hotlines" },
+        handle: { title: "Resident emergency hotlines", heading: "Hotlines" },
       },
       {
         path: "account",
@@ -196,22 +207,25 @@ export const appRoutes = [
       {
         index: true,
         element: <ResponderDashboardPage />,
-        handle: { title: "Responder dashboard" },
+        handle: { title: "Responder dashboard", heading: "Dashboard" },
       },
       {
         path: "incidents",
         element: <IncidentQueuePage />,
-        handle: { title: "Incident queue" },
+        handle: { title: "Incident queue", heading: "Incidents" },
       },
       {
         path: "incidents/:id",
         element: <IncidentDetailPage />,
-        handle: { title: "Incident details" },
+        handle: {
+          title: "Incident details",
+          backTo: "/responder/incidents",
+        },
       },
       {
         path: "advisories",
         element: <ResponderAdvisoriesPage />,
-        handle: { title: "Public advisories" },
+        handle: { title: "Public advisories", heading: "Advisories" },
       },
       {
         path: "applications",
@@ -220,17 +234,17 @@ export const appRoutes = [
             <ReviewQueuePage />
           </RequireReviewer>
         ),
-        handle: { title: "Review applications" },
+        handle: { title: "Review applications", heading: "Applications" },
       },
       {
         path: "hotlines",
         element: <HotlineDirectoryPage />,
-        handle: { title: "Responder hotlines" },
+        handle: { title: "Responder hotlines", heading: "Hotlines" },
       },
       {
         path: "account",
         element: <AccountPage />,
-        handle: { title: "Responder account" },
+        handle: { title: "Responder account", heading: "Account" },
       },
     ],
   },

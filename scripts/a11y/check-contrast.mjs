@@ -15,6 +15,7 @@ const R=(a,b)=>{const l1=L(a),l2=L(b);const[h,l]=l1>l2?[l1,l2]:[l2,l1];return (h
 const W=hex('#ffffff'), SHELL=hex('#1a4599');
 const CARD=over(W,0.08,SHELL), RAISED=over(W,0.16,SHELL), INPUT=over(hex('#071852'),0.55,SHELL), NAV=hex('#0d2668');
 // v2 tactile surfaces: the nav's pressed well and the dark badge pill.
+const RSHELL=hex('#2563a8'), RCARD=over(W,0.08,RSHELL), RBADGE=over(hex('#14286e'),0.75,RSHELL);
 const NAV_WELL=over(hex('#000000'),0.28,NAV), BADGE=over(hex('#14286e'),0.75,SHELL);
 const rows=[
  ['white on card',W,CARD],['white on shell',W,SHELL],
@@ -43,6 +44,14 @@ const rows=[
  ['resident-text on card',hex('#a9d1fd'),CARD],
  ['warning-text on card',hex('#fac37b'),CARD],
  ['drawer link white on #0a2470',W,hex('#0a2470')],
+ // The responder shell starts lighter (#2563a8); these are its worst cases.
+ ['white on responder shell',W,RSHELL],
+ ['ink-soft 82% on responder shell',over(W,0.82,RSHELL),RSHELL],
+ ['responder ink-soft 92% on responder card',over(W,0.92,RCARD),RCARD],
+ ['white on responder card',W,RCARD],
+ ['white on responder orange row',W,over(hex('#f5900a'),0.2,RCARD)],
+ ['badge info on pill over responder shell',hex('#93c5fd'),RBADGE],
+ ['badge warning on pill over responder shell',hex('#fac37b'),RBADGE],
  ['modal text on #0e2a63',W,hex('#0e2a63')],
  ['modal soft 82% on #0e2a63',over(W,0.82,hex('#0e2a63')),hex('#0e2a63')],
 ];

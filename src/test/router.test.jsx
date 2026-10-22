@@ -83,7 +83,7 @@ describe("application shell routing", () => {
     renderRoute("/");
     const heading = await screen.findByRole("heading", {
       level: 1,
-      name: "Report flooding and request help in Aklan",
+      name: "Call for help",
     });
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
@@ -117,7 +117,7 @@ describe("application shell routing", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: "Responder dashboard",
+        name: "Dashboard",
       }),
     ).toBeInTheDocument();
     expect(
@@ -146,12 +146,10 @@ describe("application shell routing", () => {
     // assertion was on Phase 1 wording that spoke about migration scope, which
     // stopped being true once the migration finished.
     expect(
-      await screen.findByRole("heading", { name: "That page does not exist" }),
+      await screen.findByRole("heading", { name: "Page not found" }),
     ).toBeInTheDocument();
     // The route must not fall through to a shell that implies a session.
-    expect(
-      screen.getByRole("link", { name: "Back to the home page" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
   });
 });
 
@@ -173,7 +171,7 @@ describe("page titles and headings", () => {
 
       const heading = await screen.findByRole("heading", {
         level: 1,
-        name: title === "Page not found" ? "That page does not exist" : name,
+        name: name,
       });
 
       await waitFor(() => expect(document.title).toBe(`${title} | Tabang`));
