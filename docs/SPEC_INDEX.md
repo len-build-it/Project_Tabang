@@ -1,7 +1,7 @@
 # Specification index
 
 Created: 2026-09-26T16:25:15+08:00
-Updated: 2026-10-22T20:30:00+08:00
+Updated: 2026-10-22T20:35:48+08:00
 
 | Category | ID | Current path | Revision | Status | Replaces |
 | --- | --- | --- | --- | --- | --- |
@@ -12,7 +12,7 @@ Updated: 2026-10-22T20:30:00+08:00
 | Feature | FEAT-002 | [features/FEAT-002-render-migration.md](features/FEAT-002-render-migration.md) | 1 | Approved 2026-10-21 | Replaces FEAT-001/REQ-005, REQ-010 (CSP part), REQ-040 to REQ-043 |
 | Plan | FEAT-002 | [plans/FEAT-002-implementation.md](plans/FEAT-002-implementation.md) | 1 | Approved 2026-10-21; execution handed to another AI coding agent | - |
 | Feature | FEAT-003 | [features/FEAT-003-resident-ui-v2.md](features/FEAT-003-resident-ui-v2.md) | 1 | Approved 2026-10-22; implemented in `269de50` | - |
-| Feature | FEAT-004 | [features/FEAT-004-public-responder-ui-v2.md](features/FEAT-004-public-responder-ui-v2.md) | 1 | Implemented on Len's chat instruction 2026-10-22; record awaits review | - |
+| Feature | FEAT-004 | [features/FEAT-004-public-responder-ui-v2.md](features/FEAT-004-public-responder-ui-v2.md) | 1 | Approved 2026-10-22; implemented in `da262b3`, with the sign-in fix `26ba40d` | - |
 | Operations | OPS | [operations.md](operations.md) | - | Current; rewritten for Render in FEAT-002 phase 6 | [archive/supabase-operations.md](archive/supabase-operations.md), archived 2026-10-21 |
 | Reference | API | [api/README.md](api/README.md), [api/openapi.json](api/openapi.json) | v1 | Current | - |
 | Reference | URLS | [legacy-url-map.md](legacy-url-map.md) | - | Current; A2 merged in plan phase 1 | - |

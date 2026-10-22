@@ -179,7 +179,8 @@ Len approved FEAT-003 in chat on 2026-10-22 at about 20:01 +08:00 and authorized
 
 Updated 2026-10-22T20:30+08:00: FEAT-004 (public and responder screens in the v2 design) is implemented on branch `feat-004/public-responder-ui`, based on `feat-003/resident-ui`; see [docs/features/FEAT-004-public-responder-ui-v2.md](docs/features/FEAT-004-public-responder-ui-v2.md) and [docs/evidence/FEAT-004.md](docs/evidence/FEAT-004.md).
 The branch also carries `26ba40d`, which fixes a FEAT-002 bug: a refused sign-in left the form replaced by "Checking your session"; it took two attempts, recorded in the evidence.
-Neither is pushed or merged; Len reviews the FEAT-004 record and screenshots, then decides on pushing.
+Len approved FEAT-004 in chat on 2026-10-22 at about 20:35 +08:00 ("alright push") and authorized pushing both branches; neither is merged.
+Next action: Len decides how and when to merge `feat-002/render`, `feat-003/resident-ui`, and `feat-004/public-responder-ui`, then redeploys on Render.
 
 Updated 2026-10-21T17:06+08:00: Len redeploys `tabang-app` on Render (Blueprint sync, then a deploy) with the `HOST=0.0.0.0` fix, then checks `/api/v1/health`, seeds hotlines, and grants the first admin per `docs/operations.md`.
 

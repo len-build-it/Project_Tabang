@@ -1,10 +1,11 @@
 # FEAT-004: Public and responder screens in the v2 "tactile" design
 
 Created: 2026-10-22T20:30:00+08:00
-Updated: 2026-10-22T20:30:00+08:00
+Updated: 2026-10-22T20:35:48+08:00
 Revision: 1
-Status: Implemented on Len's chat instruction; this record awaits Len's review
+Status: Approved
 Len's chat instruction: On 2026-10-22 at about 20:01 +08:00, approving FEAT-003, Len said in chat: "we'll work on the public and responder v2 screens next".
+Len's chat approval: Approved by Len in chat on 2026-10-22 at about 20:35 +08:00, after reviewing the implementation summary, commits `26ba40d` and `da262b3`: "alright push"
 Architecture: [../product/ARCHITECTURE.md](../product/ARCHITECTURE.md) Revision 3, unchanged
 Builds on: [FEAT-003-resident-ui-v2.md](FEAT-003-resident-ui-v2.md), approved
 Design source: Claude Design project `37ff3689-6501-4e24-8db2-b36dc0416ecb`, files `Tabang Public v2.dc.html` (screens 1 to 7) and `Tabang Responder v2.dc.html` (screens 15 to 19)
